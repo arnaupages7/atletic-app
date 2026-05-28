@@ -5,7 +5,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 const RUTES_PORTAL = ['/portal']
 const RUTES_BACKOFFICE = ['/backoffice']
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -41,7 +41,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // Rutes del backoffice: requereix rol gestor/admin (comprovat a la pàgina)
+  // Rutes del backoffice: requereix autenticació (rol comprovat a la pàgina)
   const esRutaBackoffice = RUTES_BACKOFFICE.some((r) => pathname.startsWith(r))
   if (esRutaBackoffice && !user) {
     return NextResponse.redirect(new URL('/login', request.url))
