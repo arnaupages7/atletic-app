@@ -1,8 +1,10 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Users, Clock, CheckCircle2, XCircle, AlertCircle } from 'lucide-react'
+import { buttonVariants } from '@/components/ui/button'
+import { Users, Clock, CheckCircle2, XCircle, AlertCircle, PlusCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { EstatJugador } from '@/lib/supabase/types'
 
@@ -41,8 +43,14 @@ const ESTAT_CONFIG: Record<EstatJugador, { label: string; icon: React.ElementTyp
   },
 }
 
-export default async function JugadorsPage() {
+export default async function JugadorsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ nova?: string }>
+}) {
   const supabase = await createClient()
+  const params = await searchParams
+  const novaInscripcio = params.nova === '1'
 
   const {
     data: { user },
@@ -50,10 +58,10 @@ export default async function JugadorsPage() {
 
   if (!user) redirect('/login')
 
-  // Obtenir id del soci
+  // Obtenir id del soci + estat
   const { data: soci } = await supabase
     .from('socis')
-    .select('id')
+    .select('id, estat')
     .eq('user_id', user.id)
     .single()
 
@@ -103,14 +111,39 @@ export default async function JugadorsPage() {
             Inscripcions de jugadors al futbol base.
           </p>
         </div>
-        {/* Botó inscriure (Fase 6 — desactivat per ara) */}
-        <div
-          className="px-3 py-2 rounded-md bg-muted text-muted-foreground text-sm cursor-not-allowed select-none"
-          title="Disponible aviat"
-        >
-          + Inscriure jugador
-        </div>
+        {soci?.estat === 'actiu' ? (
+          <Link
+            href="/portal/jugadors/nou"
+            className={cn(buttonVariants({ size: 'sm' }), 'shrink-0 gap-1.5')}
+          >
+            <PlusCircle className="size-4" />
+            Inscriure jugador
+          </Link>
+        ) : (
+          <div
+            className="px-3 py-2 rounded-md bg-muted text-muted-foreground text-sm cursor-not-allowed select-none text-xs"
+            title="Cal tenir la quota de soci activa"
+          >
+            Inscriure jugador
+          </div>
+        )}
       </div>
+
+      {/* Banner confirmació nova inscripció */}
+      {novaInscripcio && (
+        <div className="flex items-start gap-3 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-950/30">
+          <CheckCircle2 className="size-5 text-green-600 dark:text-green-400 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-medium text-green-800 dark:text-green-200">
+              Sol·licitud enviada correctament
+            </p>
+            <p className="text-xs text-green-700 dark:text-green-300 mt-1">
+              El club revisarà la inscripció i et notificarà per correu. Pots seguir
+              l&apos;estat aquí.
+            </p>
+          </div>
+        </div>
+      )}
 
       {(!jugadors || jugadors.length === 0) ? (
         <div className="rounded-lg border border-dashed p-8 text-center">

@@ -150,6 +150,9 @@ export interface Database {
           document_dni_url: string | null
           num_catsalut: string | null
           talla_samarreta: TallaSamarreta | null
+          genere: string | null
+          dni: string | null
+          adreca: string | null
           consentiment_privacitat: boolean
           consentiment_comunicacions: boolean
           stripe_session_id: string | null
@@ -166,6 +169,9 @@ export interface Database {
           document_dni_url?: string | null
           num_catsalut?: string | null
           talla_samarreta?: TallaSamarreta | null
+          genere?: string | null
+          dni?: string | null
+          adreca?: string | null
           consentiment_privacitat?: boolean
           consentiment_comunicacions?: boolean
           stripe_session_id?: string | null
@@ -182,6 +188,9 @@ export interface Database {
           document_dni_url?: string | null
           num_catsalut?: string | null
           talla_samarreta?: TallaSamarreta | null
+          genere?: string | null
+          dni?: string | null
+          adreca?: string | null
           consentiment_privacitat?: boolean
           consentiment_comunicacions?: boolean
           stripe_session_id?: string | null
