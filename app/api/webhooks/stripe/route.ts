@@ -47,6 +47,37 @@ async function handleCheckoutCompleted(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supabase: any
 ) {
+  const jugadorId = session.metadata?.jugador_id
+
+  // ── Pagament inscripció jugador ──────────────────────────
+  if (jugadorId) {
+    // Activar jugador
+    await supabase
+      .from('jugadors')
+      .update({ estat: 'actiu' })
+      .eq('id', jugadorId)
+
+    // Registrar pagament
+    await supabase.from('pagaments').insert({
+      membre_id: jugadorId,
+      stripe_session_id: session.id,
+      stripe_payment_intent_id:
+        typeof session.payment_intent === 'string'
+          ? session.payment_intent
+          : (session.payment_intent?.id ?? null),
+      concepte: 'quota_jugador',
+      import: (session.amount_total ?? 0) / 100,
+      estat: 'completat',
+      metadata: {
+        equip_id: session.metadata?.equip_id ?? null,
+        soci_responsable_id: session.metadata?.soci_responsable_id ?? null,
+        customer_email: session.customer_email,
+      },
+    })
+    return
+  }
+
+  // ── Pagament quota soci ──────────────────────────────────
   const sociId = session.metadata?.soci_id
   if (!sociId) return
 
