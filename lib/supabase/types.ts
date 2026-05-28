@@ -326,6 +326,87 @@ export interface Database {
         }
         Relationships: []
       }
+      events: {
+        Row: {
+          id: string
+          titol: string
+          descripcio: string | null
+          data_inici: string
+          data_fi: string | null
+          lloc: string | null
+          imatge_url: string | null
+          exclusiu_socis: boolean
+          publicat: boolean
+          autor_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          titol: string
+          descripcio?: string | null
+          data_inici: string
+          data_fi?: string | null
+          lloc?: string | null
+          imatge_url?: string | null
+          exclusiu_socis?: boolean
+          publicat?: boolean
+          autor_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          titol?: string
+          descripcio?: string | null
+          data_inici?: string
+          data_fi?: string | null
+          lloc?: string | null
+          imatge_url?: string | null
+          exclusiu_socis?: boolean
+          publicat?: boolean
+          autor_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      videos: {
+        Row: {
+          id: string
+          titol: string
+          descripcio: string | null
+          url_youtube: string
+          exclusiu_socis: boolean
+          publicat: boolean
+          autor_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          titol: string
+          descripcio?: string | null
+          url_youtube: string
+          exclusiu_socis?: boolean
+          publicat?: boolean
+          autor_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          titol?: string
+          descripcio?: string | null
+          url_youtube?: string
+          exclusiu_socis?: boolean
+          publicat?: boolean
+          autor_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: Record<string, never>
     Functions: {
