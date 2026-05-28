@@ -1,5 +1,5 @@
 // Tipus generats automàticament per Supabase CLI
-// Per actualitzar: npx supabase gen types typescript --project-id PROJECTID > lib/supabase/types.ts
+// Per actualitzar: npx supabase gen types typescript --project-id bzpeazbxvbsmuzfmkyny > lib/supabase/types.ts
 
 export type Json =
   | string
@@ -11,7 +11,13 @@ export type Json =
 
 export type TipusMembre = 'soci' | 'jugador'
 export type EstatSoci = 'pendent_pagament' | 'actiu' | 'baixa'
-export type EstatJugador = 'pendent_aprovacio' | 'aprovada' | 'denegada' | 'pendent_pagament' | 'actiu' | 'baixa'
+export type EstatJugador =
+  | 'pendent_aprovacio'
+  | 'aprovada'
+  | 'denegada'
+  | 'pendent_pagament'
+  | 'actiu'
+  | 'baixa'
 export type EstatPagament = 'pendent' | 'completat' | 'fallat' | 'reemborsat'
 export type RolGestor = 'admin' | 'gestor'
 export type TallaSamarreta = 'Miss' | 'XS' | 'S' | 'M' | 'L' | 'XL' | '2XL' | '3XL'
@@ -36,9 +42,8 @@ export const EQUIPS_SLUGS = [
   'PrimerEquip',
 ] as const
 
-export type EquipSlug = typeof EQUIPS_SLUGS[number]
+export type EquipSlug = (typeof EQUIPS_SLUGS)[number]
 
-// Tipus de la BD (s'omplirà quan generi els tipus amb Supabase CLI)
 export interface Database {
   public: {
     Tables: {
@@ -55,8 +60,31 @@ export interface Database {
           data_naixement: string | null
           created_at: string
         }
-        Insert: Omit<Database['public']['Tables']['membres']['Row'], 'id' | 'numero_membre' | 'created_at'>
-        Update: Partial<Database['public']['Tables']['membres']['Insert']>
+        Insert: {
+          id?: string
+          numero_membre?: number
+          tipus: TipusMembre
+          nom: string
+          cognom1: string
+          cognom2?: string | null
+          email?: string | null
+          telefon?: string | null
+          data_naixement?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          numero_membre?: number
+          tipus?: TipusMembre
+          nom?: string
+          cognom1?: string
+          cognom2?: string | null
+          email?: string | null
+          telefon?: string | null
+          data_naixement?: string | null
+          created_at?: string
+        }
+        Relationships: []
       }
       socis: {
         Row: {
@@ -66,45 +94,165 @@ export interface Database {
           adreca: string | null
           codi_postal: string | null
           poblacio: string | null
+          provincia: string | null
+          pais: string | null
           genere: string | null
           talla_samarreta: TallaSamarreta | null
           stripe_customer_id: string | null
+          consentiment_privacitat: boolean
+          consentiment_comunicacions: boolean
           data_alta: string | null
           estat: EstatSoci
         }
-        Insert: Omit<Database['public']['Tables']['socis']['Row'], never>
-        Update: Partial<Database['public']['Tables']['socis']['Insert']>
+        Insert: {
+          id: string
+          user_id?: string | null
+          dni?: string | null
+          adreca?: string | null
+          codi_postal?: string | null
+          poblacio?: string | null
+          provincia?: string | null
+          pais?: string | null
+          genere?: string | null
+          talla_samarreta?: TallaSamarreta | null
+          stripe_customer_id?: string | null
+          consentiment_privacitat?: boolean
+          consentiment_comunicacions?: boolean
+          data_alta?: string | null
+          estat?: EstatSoci
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          dni?: string | null
+          adreca?: string | null
+          codi_postal?: string | null
+          poblacio?: string | null
+          provincia?: string | null
+          pais?: string | null
+          genere?: string | null
+          talla_samarreta?: TallaSamarreta | null
+          stripe_customer_id?: string | null
+          consentiment_privacitat?: boolean
+          consentiment_comunicacions?: boolean
+          data_alta?: string | null
+          estat?: EstatSoci
+        }
+        Relationships: []
       }
       jugadors: {
         Row: {
           id: string
           soci_responsable_id: string
           equip_id: string | null
-          equip_slug: EquipSlug | null
           temporada: string
           foto_fitxa_url: string | null
           document_dni_url: string | null
           num_catsalut: string | null
           talla_samarreta: TallaSamarreta | null
+          consentiment_privacitat: boolean
+          consentiment_comunicacions: boolean
           stripe_session_id: string | null
           estat: EstatJugador
           motiu_denegacio: string | null
+          created_at: string
         }
-        Insert: Omit<Database['public']['Tables']['jugadors']['Row'], never>
-        Update: Partial<Database['public']['Tables']['jugadors']['Insert']>
+        Insert: {
+          id: string
+          soci_responsable_id: string
+          equip_id?: string | null
+          temporada: string
+          foto_fitxa_url?: string | null
+          document_dni_url?: string | null
+          num_catsalut?: string | null
+          talla_samarreta?: TallaSamarreta | null
+          consentiment_privacitat?: boolean
+          consentiment_comunicacions?: boolean
+          stripe_session_id?: string | null
+          estat?: EstatJugador
+          motiu_denegacio?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          soci_responsable_id?: string
+          equip_id?: string | null
+          temporada?: string
+          foto_fitxa_url?: string | null
+          document_dni_url?: string | null
+          num_catsalut?: string | null
+          talla_samarreta?: TallaSamarreta | null
+          consentiment_privacitat?: boolean
+          consentiment_comunicacions?: boolean
+          stripe_session_id?: string | null
+          estat?: EstatJugador
+          motiu_denegacio?: string | null
+          created_at?: string
+        }
+        Relationships: []
       }
       equips: {
         Row: {
           id: string
           nom: string
-          slug: EquipSlug
+          slug: string
           categoria: string | null
           temporada: string
           places_disponibles: number | null
+          actiu: boolean
           created_at: string
         }
-        Insert: Omit<Database['public']['Tables']['equips']['Row'], 'id' | 'created_at'>
-        Update: Partial<Database['public']['Tables']['equips']['Insert']>
+        Insert: {
+          id?: string
+          nom: string
+          slug: string
+          categoria?: string | null
+          temporada: string
+          places_disponibles?: number | null
+          actiu?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          nom?: string
+          slug?: string
+          categoria?: string | null
+          temporada?: string
+          places_disponibles?: number | null
+          actiu?: boolean
+          created_at?: string
+        }
+        Relationships: []
+      }
+      gestors: {
+        Row: {
+          id: string
+          user_id: string
+          nom: string
+          email: string
+          rol: RolGestor
+          actiu: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          nom: string
+          email: string
+          rol?: RolGestor
+          actiu?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          nom?: string
+          email?: string
+          rol?: RolGestor
+          actiu?: boolean
+          created_at?: string
+        }
+        Relationships: []
       }
       pagaments: {
         Row: {
@@ -115,10 +263,32 @@ export interface Database {
           concepte: string
           import: number
           estat: EstatPagament
+          metadata: Json | null
           created_at: string
         }
-        Insert: Omit<Database['public']['Tables']['pagaments']['Row'], 'id' | 'created_at'>
-        Update: Partial<Database['public']['Tables']['pagaments']['Insert']>
+        Insert: {
+          id?: string
+          membre_id: string
+          stripe_session_id?: string | null
+          stripe_payment_intent_id?: string | null
+          concepte: string
+          import: number
+          estat?: EstatPagament
+          metadata?: Json | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          membre_id?: string
+          stripe_session_id?: string | null
+          stripe_payment_intent_id?: string | null
+          concepte?: string
+          import?: number
+          estat?: EstatPagament
+          metadata?: Json | null
+          created_at?: string
+        }
+        Relationships: []
       }
       noticies: {
         Row: {
@@ -128,14 +298,66 @@ export interface Database {
           slug: string
           publicat: boolean
           imatge_url: string | null
+          autor_id: string | null
           created_at: string
           updated_at: string
         }
-        Insert: Omit<Database['public']['Tables']['noticies']['Row'], 'id' | 'created_at' | 'updated_at'>
-        Update: Partial<Database['public']['Tables']['noticies']['Insert']>
+        Insert: {
+          id?: string
+          titol: string
+          cos: string
+          slug: string
+          publicat?: boolean
+          imatge_url?: string | null
+          autor_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          titol?: string
+          cos?: string
+          slug?: string
+          publicat?: boolean
+          imatge_url?: string | null
+          autor_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
     }
-    Functions: Record<string, never>
-    Enums: Record<string, never>
+    Views: Record<string, never>
+    Functions: {
+      is_gestor: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      get_my_soci_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      te_germa_actiu: {
+        Args: { p_soci_id: string }
+        Returns: boolean
+      }
+      proper_numero_membre: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+    }
+    Enums: {
+      tipus_membre: TipusMembre
+      estat_soci: EstatSoci
+      estat_jugador: EstatJugador
+      estat_pagament: EstatPagament
+      rol_gestor: RolGestor
+      talla_samarreta: TallaSamarreta
+    }
+    CompositeTypes: Record<string, never>
   }
 }
