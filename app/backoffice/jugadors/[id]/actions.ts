@@ -13,7 +13,7 @@ export async function aprovarJugadorAction(jugadorId: string): Promise<{ error?:
   if (!user) redirect('/login')
 
   // Verificar gestor
-  const { data: gestor } = await supabase
+  const { data: gestor } = await (await createServiceClient())
     .from('gestors')
     .select('id')
     .eq('user_id', user.id)
@@ -155,7 +155,7 @@ export async function denegarJugadorAction(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: gestor } = await supabase
+  const { data: gestor } = await (await createServiceClient())
     .from('gestors')
     .select('id')
     .eq('user_id', user.id)

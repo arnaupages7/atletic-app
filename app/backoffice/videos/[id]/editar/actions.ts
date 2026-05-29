@@ -22,7 +22,7 @@ export async function editarVideoAction(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: gestor } = await supabase
+  const { data: gestor } = await (await createServiceClient())
     .from('gestors')
     .select('id')
     .eq('user_id', user.id)
@@ -66,7 +66,7 @@ export async function eliminarVideoAction(videoId: string): Promise<{ error?: st
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: gestor } = await supabase
+  const { data: gestor } = await (await createServiceClient())
     .from('gestors')
     .select('id')
     .eq('user_id', user.id)
