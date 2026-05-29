@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { createClient as createSupabaseServiceClient } from '@supabase/supabase-js'
 
 // Rutes que requereixen autenticació
 const RUTES_PORTAL = ['/portal']
@@ -50,7 +51,11 @@ export async function proxy(request: NextRequest) {
   // Redirigir usuaris autenticats fora de les pàgines d'auth
   // /registre: permetre accés si l'usuari autenticat no té soci (cas excepcional)
   if (user && pathname === '/login') {
-    const { data: gestor } = await supabase
+    const serviceClient = createSupabaseServiceClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+    const { data: gestor } = await serviceClient
       .from('gestors')
       .select('id')
       .eq('user_id', user.id)

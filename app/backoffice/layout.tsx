@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { BackofficeNav } from './_components/backoffice-nav'
 import type { GestorInfo } from './_components/backoffice-nav'
 
@@ -24,8 +24,9 @@ export default async function BackofficeLayout({
 
   if (!user) redirect('/login')
 
-  // Verificar que és gestor
-  const { data: gestor } = await supabase
+  // Verificar que és gestor (service client per evitar restriccions RLS)
+  const serviceSupabase = await createServiceClient()
+  const { data: gestor } = await serviceSupabase
     .from('gestors')
     .select('nom, email, rol')
     .eq('user_id', user.id)

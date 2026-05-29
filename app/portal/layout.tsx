@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { NavSidebar } from './_components/nav-sidebar'
 import type { SociInfo } from './_components/nav-sidebar'
 
@@ -32,8 +32,9 @@ export default async function PortalLayout({
     .single()
 
   if (!soci) {
-    // Comprovar si és gestor (no té soci, però sí backoffice)
-    const { data: gestor } = await supabase
+    // Comprovar si és gestor (service client per evitar restriccions RLS)
+    const serviceSupabase = await createServiceClient()
+    const { data: gestor } = await serviceSupabase
       .from('gestors')
       .select('id')
       .eq('user_id', user.id)
