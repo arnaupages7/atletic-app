@@ -65,7 +65,7 @@ export async function aprovarJugadorAction(jugadorId: string): Promise<{ error?:
   const equip = jugador.equips as unknown as { nom: string } | null
 
   // Actualitzar estat jugador a 'aprovada'
-  const { error: updateError } = await supabase
+  const { error: updateError } = await serviceSupabase
     .from('jugadors')
     .update({ estat: 'aprovada' })
     .eq('id', jugadorId)
@@ -192,7 +192,7 @@ export async function denegarJugadorAction(
     .single()
 
   // Actualitzar estat
-  const { error: updateError } = await supabase
+  const { error: updateError } = await serviceSupabase
     .from('jugadors')
     .update({ estat: 'denegada', motiu_denegacio: parsed.data.motiu })
     .eq('id', jugadorId)
