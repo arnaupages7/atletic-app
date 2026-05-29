@@ -32,7 +32,7 @@ export async function loginAction(
   }
 
   const supabase = await createClient()
-  const { error } = await supabase.auth.signInWithPassword({
+  const { data: authData, error } = await supabase.auth.signInWithPassword({
     email: parsed.data.email,
     password: parsed.data.password,
   })
@@ -42,7 +42,15 @@ export async function loginAction(
     return { error: 'Correu electrònic o contrasenya incorrectes.' }
   }
 
-  redirect('/portal')
+  // Si és gestor actiu → backoffice, si no → portal
+  const { data: gestor } = await supabase
+    .from('gestors')
+    .select('id')
+    .eq('user_id', authData.user.id)
+    .eq('actiu', true)
+    .maybeSingle()
+
+  redirect(gestor ? '/backoffice' : '/portal')
 }
 
 export async function logoutAction(): Promise<void> {
