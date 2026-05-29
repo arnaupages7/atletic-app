@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/card'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -9,7 +9,7 @@ import { Plus, Lock, Globe, Eye, EyeOff, Pencil } from 'lucide-react'
 export const metadata: Metadata = { title: 'Events' }
 
 export default async function BackofficeEventsPage() {
-  const supabase = await createClient()
+  const supabase = await createServiceClient()
 
   const { data: events } = await supabase
     .from('events')

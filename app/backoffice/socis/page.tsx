@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import type { EstatSoci } from '@/lib/supabase/types'
@@ -22,7 +22,7 @@ export default async function SocisPage({
 }: {
   searchParams: Promise<{ estat?: string; q?: string }>
 }) {
-  const supabase = await createClient()
+  const supabase = await createServiceClient()
   const params = await searchParams
   const filtreEstat = params.estat as EstatSoci | undefined
   const cerca = params.q?.toLowerCase() ?? ''

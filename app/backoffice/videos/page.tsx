@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/card'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -20,7 +20,7 @@ function getYouTubeThumbnail(url: string): string | null {
 }
 
 export default async function BackofficeVideosPage() {
-  const supabase = await createClient()
+  const supabase = await createServiceClient()
 
   const { data: videos } = await supabase
     .from('videos')

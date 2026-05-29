@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { Clock, CheckCircle2, AlertCircle } from 'lucide-react'
@@ -36,7 +36,7 @@ export default async function JugadorsBackofficePage({
 }: {
   searchParams: Promise<{ tab?: string }>
 }) {
-  const supabase = await createClient()
+  const supabase = await createServiceClient()
   const params = await searchParams
   const tab = (params.tab ?? 'pendent_aprovacio') as EstatJugador | 'tots'
 

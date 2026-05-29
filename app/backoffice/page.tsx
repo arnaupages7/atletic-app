@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Users, UserCheck, Clock, Euro } from 'lucide-react'
 
@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: 'Dashboard' }
 const fmt = new Intl.NumberFormat('ca-ES', { style: 'currency', currency: 'EUR' })
 
 export default async function BackofficePage() {
-  const supabase = await createClient()
+  const supabase = await createServiceClient()
 
   // KPIs en paral·lel
   const [
