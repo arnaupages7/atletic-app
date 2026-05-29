@@ -101,14 +101,16 @@ export default async function FitxaPage({
       {/* Fitxa */}
       <div className="max-w-[700px] mx-auto bg-white border rounded-xl shadow-sm overflow-hidden print:shadow-none print:border-0 print:rounded-none">
         {/* Capçalera club */}
-        <div className="bg-[#1a1a2e] text-white px-6 py-4 flex items-center justify-between">
+        <div className="text-white px-6 py-4 flex items-center justify-between"
+          style={{ background: 'linear-gradient(135deg, #ff6600 0%, #cc4400 100%)' }}
+        >
           <div>
-            <p className="text-xs font-medium tracking-widest uppercase text-white/60">Atlètic Club Banyoles</p>
+            <p className="text-xs font-medium tracking-widest uppercase text-white/70">Atlètic Club Banyoles</p>
             <h2 className="text-lg font-bold mt-0.5">Fitxa de Jugador</h2>
-            <p className="text-sm text-white/70 mt-0.5">Temporada {jugador.temporada}</p>
+            <p className="text-sm text-white/80 mt-0.5">Temporada {jugador.temporada}</p>
           </div>
           <div className="text-right">
-            <p className="text-xs text-white/60 uppercase tracking-wide">Núm. membre</p>
+            <p className="text-xs text-white/70 uppercase tracking-wide">Núm. membre</p>
             <p className="text-3xl font-mono font-bold">{jm.numero_membre}</p>
           </div>
         </div>

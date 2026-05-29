@@ -108,7 +108,13 @@ export default async function PagamentsPage() {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{pagament.concepte}</p>
+                      <p className="text-sm font-medium truncate">
+                        {pagament.concepte === 'quota_soci'
+                          ? 'Quota de soci'
+                          : pagament.concepte === 'quota_jugador'
+                          ? 'Quota futbol base'
+                          : pagament.concepte}
+                      </p>
                       <p className="text-xs text-muted-foreground mt-0.5">
                         {new Intl.DateTimeFormat('ca-ES', {
                           day: 'numeric',

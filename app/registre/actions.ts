@@ -112,7 +112,7 @@ export async function registreAction(
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/exit?status=cancel`,
     })
     checkoutUrl = session.url!
-  } catch {
+  } catch (stripeErr) {
     // Rollback
     await supabase.from('membres').delete().eq('id', membre.id)
     await supabase.auth.admin.deleteUser(userId)

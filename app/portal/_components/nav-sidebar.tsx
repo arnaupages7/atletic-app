@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
@@ -10,6 +11,7 @@ import {
   Calendar,
   PlayCircle,
   CreditCard,
+  IdCard,
   LogOut,
   Menu,
   X,
@@ -30,6 +32,7 @@ export type SociInfo = {
 const navItems = [
   { href: '/portal', label: 'Inici', icon: Home, exact: true },
   { href: '/portal/perfil', label: 'Perfil', icon: User, exact: false },
+  { href: '/portal/carnet', label: 'El meu carnet', icon: IdCard, exact: false },
   { href: '/portal/jugadors', label: 'Els meus jugadors', icon: Users, exact: false },
   { href: '/portal/events', label: 'Events', icon: Calendar, exact: false },
   { href: '/portal/videos', label: 'Vídeos', icon: PlayCircle, exact: false },
@@ -58,10 +61,20 @@ export function NavSidebar({ soci }: { soci: SociInfo }) {
   const SidebarContent = () => (
     <>
       {/* Logo */}
-      <div className="flex items-center justify-between h-14 px-4 border-b border-sidebar-border">
-        <span className="font-bold text-base tracking-tight text-sidebar-foreground">
-          Atlètic Club
-        </span>
+      <div className="flex items-center justify-between h-16 px-4 border-b border-sidebar-border">
+        <Link href="/portal" className="flex items-center gap-2.5">
+          <Image
+            src="/logo.png"
+            alt="Atlètic Club Banyoles"
+            width={36}
+            height={36}
+            className="shrink-0"
+          />
+          <span className="font-bold text-sm tracking-tight text-sidebar-foreground leading-tight">
+            Atlètic Club<br />
+            <span className="font-normal text-xs text-muted-foreground">Banyoles</span>
+          </span>
+        </Link>
         <button
           className="lg:hidden p-1 rounded-md hover:bg-sidebar-accent"
           onClick={() => setOpen(false)}
@@ -127,7 +140,10 @@ export function NavSidebar({ soci }: { soci: SociInfo }) {
     <>
       {/* ── Mobile header ─────────────────────────── */}
       <header className="lg:hidden fixed top-0 inset-x-0 z-20 flex items-center justify-between h-14 px-4 border-b bg-background">
-        <span className="font-bold tracking-tight">Atlètic Club</span>
+        <div className="flex items-center gap-2">
+          <Image src="/logo.png" alt="Atlètic Club Banyoles" width={28} height={28} />
+          <span className="font-bold tracking-tight text-sm">Atlètic Club</span>
+        </div>
         <button
           onClick={() => setOpen(true)}
           aria-label="Obrir menú"

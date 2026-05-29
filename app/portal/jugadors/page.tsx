@@ -7,6 +7,7 @@ import { buttonVariants } from '@/components/ui/button'
 import { Users, Clock, CheckCircle2, XCircle, AlertCircle, PlusCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { EstatJugador } from '@/lib/supabase/types'
+import { PagarQuotaButton } from './_components/pagar-quota-button'
 
 export const metadata: Metadata = { title: 'Els meus jugadors' }
 
@@ -204,6 +205,14 @@ export default async function JugadorsPage({
                     <p className="text-xs text-red-600 dark:text-red-400 mt-1">
                       Motiu: {jugador.motiu_denegacio}
                     </p>
+                  )}
+                  {jugador.estat === 'aprovada' && (
+                    <div className="pt-3 border-t mt-3">
+                      <p className="text-xs text-muted-foreground mb-2">
+                        La inscripció ha estat aprovada. Completa el pagament per activar la plaça.
+                      </p>
+                      <PagarQuotaButton jugadorId={jugador.id} />
+                    </div>
                   )}
                 </CardContent>
               </Card>

@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { createServiceClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
-import { Clock, CheckCircle2, AlertCircle } from 'lucide-react'
+import { Clock } from 'lucide-react'
 import type { EstatJugador } from '@/lib/supabase/types'
 
 export const metadata: Metadata = { title: 'Jugadors' }
@@ -23,7 +23,7 @@ const ESTAT_CLASSES: Record<EstatJugador, string> = {
   baixa: 'bg-muted text-muted-foreground',
 }
 const ESTAT_LABELS: Record<EstatJugador, string> = {
-  pendent_aprovacio: "Pendent",
+  pendent_aprovacio: 'Pendent',
   aprovada: 'Aprovada',
   denegada: 'Denegada',
   pendent_pagament: 'Pendent pagament',
@@ -34,27 +34,35 @@ const ESTAT_LABELS: Record<EstatJugador, string> = {
 export default async function JugadorsBackofficePage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string }>
+  searchParams: Promise<{ tab?: string; equip?: string }>
 }) {
   const supabase = await createServiceClient()
   const params = await searchParams
   const tab = (params.tab ?? 'pendent_aprovacio') as EstatJugador | 'tots'
+  const equipFilter = params.equip ?? 'tots'
 
+  // Equips disponibles per al filtre
+  const { data: equips } = await supabase
+    .from('equips')
+    .select('id, nom')
+    .order('nom')
+
+  // Query jugadors amb filtres
   let query = supabase
     .from('jugadors')
     .select(`
       id,
       estat,
       temporada,
+      equip_id,
       created_at,
       membres!inner(nom, cognom1, numero_membre),
-      equips(nom)
+      equips(id, nom)
     `)
     .order('created_at', { ascending: false })
 
-  if (tab !== 'tots') {
-    query = query.eq('estat', tab)
-  }
+  if (tab !== 'tots') query = query.eq('estat', tab)
+  if (equipFilter !== 'tots') query = query.eq('equip_id', equipFilter)
 
   const { data: jugadors } = await query
 
@@ -63,6 +71,18 @@ export default async function JugadorsBackofficePage({
     .from('jugadors')
     .select('id', { count: 'exact', head: true })
     .eq('estat', 'pendent_aprovacio')
+
+  // Helpers per construir URLs preservant els dos filtres
+  const tabUrl = (t: string) => {
+    const p = new URLSearchParams({ tab: t })
+    if (equipFilter !== 'tots') p.set('equip', equipFilter)
+    return `/backoffice/jugadors?${p}`
+  }
+  const equipUrl = (e: string) => {
+    const p = new URLSearchParams({ tab })
+    if (e !== 'tots') p.set('equip', e)
+    return `/backoffice/jugadors?${p}`
+  }
 
   return (
     <div className="space-y-6">
@@ -79,18 +99,18 @@ export default async function JugadorsBackofficePage({
           <Clock className="size-4 shrink-0" />
           Hi ha <strong>{countPendents}</strong> sol·licitud
           {countPendents !== 1 ? 's' : ''} pendent{countPendents !== 1 ? 's' : ''} d&apos;aprovació.{' '}
-          <Link href="/backoffice/jugadors?tab=pendent_aprovacio" className="underline underline-offset-4">
+          <Link href={tabUrl('pendent_aprovacio')} className="underline underline-offset-4">
             Veure ara
           </Link>
         </div>
       )}
 
-      {/* Tabs */}
+      {/* Tabs d'estat */}
       <div className="flex gap-1 border-b">
         {TABS.map(({ value, label }) => (
           <Link
             key={value}
-            href={`/backoffice/jugadors?tab=${value}`}
+            href={tabUrl(value)}
             className={cn(
               'px-4 py-2 text-sm font-medium -mb-px border-b-2 transition-colors',
               tab === value
@@ -107,6 +127,38 @@ export default async function JugadorsBackofficePage({
           </Link>
         ))}
       </div>
+
+      {/* Filtre d'equip */}
+      {equips && equips.length > 0 && (
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs text-muted-foreground font-medium shrink-0">Equip:</span>
+          <Link
+            href={equipUrl('tots')}
+            className={cn(
+              'px-3 py-1 rounded-full text-xs font-medium transition-colors border',
+              equipFilter === 'tots'
+                ? 'bg-primary text-primary-foreground border-primary'
+                : 'bg-background text-muted-foreground border-border hover:border-primary hover:text-primary'
+            )}
+          >
+            Tots
+          </Link>
+          {equips.map((equip) => (
+            <Link
+              key={equip.id}
+              href={equipUrl(equip.id)}
+              className={cn(
+                'px-3 py-1 rounded-full text-xs font-medium transition-colors border',
+                equipFilter === equip.id
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-background text-muted-foreground border-border hover:border-primary hover:text-primary'
+              )}
+            >
+              {equip.nom}
+            </Link>
+          ))}
+        </div>
+      )}
 
       {/* Llistat */}
       <Card>
@@ -129,6 +181,7 @@ export default async function JugadorsBackofficePage({
                     {tab === 'pendent_aprovacio'
                       ? 'No hi ha sol·licituds pendents'
                       : 'No s\'han trobat jugadors'}
+                    {equipFilter !== 'tots' && ' per a aquest equip'}
                   </td>
                 </tr>
               ) : (

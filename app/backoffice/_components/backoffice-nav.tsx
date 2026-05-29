@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
@@ -72,13 +73,22 @@ export function BackofficeNav({ gestor }: { gestor: GestorInfo }) {
   const SidebarContent = () => (
     <>
       {/* Logo */}
-      <div className="flex items-center justify-between h-14 px-4 border-b border-sidebar-border">
-        <div className="flex items-center gap-2">
-          <Shield className="size-4 text-sidebar-primary" />
-          <span className="font-bold text-sm tracking-tight text-sidebar-foreground">
-            Backoffice
-          </span>
-        </div>
+      <div className="flex items-center justify-between h-16 px-4 border-b border-sidebar-border">
+        <Link href="/backoffice" className="flex items-center gap-2.5">
+          <Image
+            src="/logo.png"
+            alt="Atlètic Club Banyoles"
+            width={36}
+            height={36}
+            className="shrink-0"
+          />
+          <div className="leading-tight">
+            <p className="font-bold text-sm tracking-tight text-sidebar-foreground">Atlètic Club</p>
+            <p className="text-xs text-muted-foreground flex items-center gap-1">
+              <Shield className="size-3 text-sidebar-primary" /> Backoffice
+            </p>
+          </div>
+        </Link>
         <button
           className="lg:hidden p-1 rounded-md hover:bg-sidebar-accent"
           onClick={() => setOpen(false)}
@@ -135,7 +145,7 @@ export function BackofficeNav({ gestor }: { gestor: GestorInfo }) {
       {/* Mobile header */}
       <header className="lg:hidden fixed top-0 inset-x-0 z-20 flex items-center justify-between h-14 px-4 border-b bg-background">
         <div className="flex items-center gap-2">
-          <Shield className="size-4 text-primary" />
+          <Image src="/logo.png" alt="Atlètic Club Banyoles" width={28} height={28} />
           <span className="font-bold text-sm">Backoffice</span>
         </div>
         <button

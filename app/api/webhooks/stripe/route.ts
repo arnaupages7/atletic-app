@@ -51,26 +51,29 @@ async function handleCheckoutCompleted(
 
   // ── Pagament inscripció jugador ──────────────────────────
   if (jugadorId) {
+    const sociResponsableId = session.metadata?.soci_responsable_id
+    if (!sociResponsableId) return
+
     // Activar jugador
     await supabase
       .from('jugadors')
       .update({ estat: 'actiu' })
       .eq('id', jugadorId)
 
-    // Registrar pagament
+    // Registrar pagament sota el soci responsable (qui paga)
     await supabase.from('pagaments').insert({
-      membre_id: jugadorId,
+      membre_id: sociResponsableId,
       stripe_session_id: session.id,
       stripe_payment_intent_id:
         typeof session.payment_intent === 'string'
           ? session.payment_intent
           : (session.payment_intent?.id ?? null),
       concepte: 'quota_jugador',
-      import: (session.amount_total ?? 0) / 100,
+      import: session.amount_total ?? 0,
       estat: 'completat',
       metadata: {
-        equip_id: session.metadata?.equip_id ?? null,
-        soci_responsable_id: session.metadata?.soci_responsable_id ?? null,
+        jugador_id: jugadorId,
+        numero_membre: session.metadata?.numero_membre ?? null,
         customer_email: session.customer_email,
       },
     })
@@ -100,7 +103,7 @@ async function handleCheckoutCompleted(
         ? session.payment_intent
         : (session.payment_intent?.id ?? null),
     concepte: 'quota_soci',
-    import: (session.amount_total ?? 0) / 100,
+    import: session.amount_total ?? 0,
     estat: 'completat',
     metadata: {
       stripe_subscription_id: session.subscription,

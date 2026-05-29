@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { registreAction } from './actions'
 import { Button } from '@/components/ui/button'
@@ -61,12 +62,19 @@ export function RegistreForm() {
 
   return (
     <div className="w-full max-w-lg mx-auto px-4 py-8">
-      <div className="mb-8 text-center">
-        <div className="text-2xl font-bold tracking-tight mb-1">Atlètic Club Banyoles</div>
-        <h1 className="text-xl font-semibold">Alta de soci</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Quota anual: <strong>25 €</strong>
-        </p>
+      <div className="mb-8 text-center flex flex-col items-center gap-3">
+        <Image
+          src="/logo.png"
+          alt="Atlètic Club Banyoles"
+          width={80}
+          height={80}
+        />
+        <div>
+          <h1 className="text-xl font-semibold">Alta de soci</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Quota anual: <strong>25 €</strong>
+          </p>
+        </div>
       </div>
 
       {state?.error && (

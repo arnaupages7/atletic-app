@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { loginAction } from './actions'
 import { Button } from '@/components/ui/button'
@@ -21,9 +22,16 @@ export function LoginForm() {
   return (
     <Card>
       <CardHeader className="space-y-1">
-        <div className="flex justify-center mb-2">
-          {/* Aquí anirà el logotip del club */}
-          <div className="text-2xl font-bold tracking-tight">Atlètic</div>
+        <div className="flex flex-col items-center gap-2 mb-2">
+          <Image
+            src="/logo.png"
+            alt="Atlètic Club Banyoles"
+            width={72}
+            height={72}
+          />
+          <p className="text-xs text-muted-foreground tracking-wider uppercase font-medium">
+            Atlètic Club Banyoles
+          </p>
         </div>
         <CardTitle className="text-xl text-center">Accés al portal</CardTitle>
         <CardDescription className="text-center">

@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/card'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { Users, Calendar, PlayCircle, CreditCard, ChevronRight, AlertCircle } from 'lucide-react'
+import { Users, Calendar, PlayCircle, CreditCard, ChevronRight, AlertCircle, IdCard } from 'lucide-react'
 
 export const metadata: Metadata = { title: 'Inici' }
 
@@ -154,6 +154,20 @@ export default async function PortalPage() {
               </span>
             </div>
           </div>
+          {soci.estat === 'actiu' && (
+            <div className="mt-4 pt-4 border-t border-white/20">
+              <Link
+                href="/portal/carnet"
+                className={cn(
+                  buttonVariants({ variant: 'secondary', size: 'sm' }),
+                  'gap-1.5 bg-white/15 hover:bg-white/25 text-white border-0'
+                )}
+              >
+                <IdCard className="size-3.5" />
+                Veure i imprimir carnet
+              </Link>
+            </div>
+          )}
         </CardContent>
       </Card>
 

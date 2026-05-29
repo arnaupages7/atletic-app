@@ -83,7 +83,7 @@ export default async function BackofficePage() {
     },
     {
       label: 'Ingressos mes actual',
-      value: fmt.format(ingressosMes),
+      value: fmt.format(ingressosMes / 100),
       sub: new Intl.DateTimeFormat('ca-ES', { month: 'long', year: 'numeric' }).format(new Date()),
       icon: Euro,
       color: 'text-violet-500',
