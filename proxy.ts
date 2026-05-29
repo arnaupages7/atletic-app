@@ -48,8 +48,15 @@ export async function proxy(request: NextRequest) {
   }
 
   // Redirigir usuaris autenticats fora de les pàgines d'auth
-  if (user && (pathname === '/login' || pathname === '/registre')) {
-    return NextResponse.redirect(new URL('/portal', request.url))
+  // /registre: permetre accés si l'usuari autenticat no té soci (cas excepcional)
+  if (user && pathname === '/login') {
+    const { data: gestor } = await supabase
+      .from('gestors')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('actiu', true)
+      .maybeSingle()
+    return NextResponse.redirect(new URL(gestor ? '/backoffice' : '/portal', request.url))
   }
 
   return supabaseResponse

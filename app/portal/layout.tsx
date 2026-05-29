@@ -31,7 +31,16 @@ export default async function PortalLayout({
     .eq('user_id', user.id)
     .single()
 
-  if (!soci) redirect('/login')
+  if (!soci) {
+    // Comprovar si és gestor (no té soci, però sí backoffice)
+    const { data: gestor } = await supabase
+      .from('gestors')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('actiu', true)
+      .maybeSingle()
+    redirect(gestor ? '/backoffice' : '/registre')
+  }
 
   // Obtenir dades del membre (nom + número)
   const { data: membre } = await supabase
@@ -40,7 +49,7 @@ export default async function PortalLayout({
     .eq('id', soci.id)
     .single()
 
-  if (!membre) redirect('/login')
+  if (!membre) redirect('/registre')
 
   const sociInfo: SociInfo = {
     id: soci.id,
