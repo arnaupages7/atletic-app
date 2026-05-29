@@ -28,6 +28,7 @@ export async function aprovarJugadorAction(jugadorId: string): Promise<{ error?:
     .from('jugadors')
     .select(`
       id,
+      estat,
       soci_responsable_id,
       temporada,
       equip_id,
@@ -39,7 +40,7 @@ export async function aprovarJugadorAction(jugadorId: string): Promise<{ error?:
 
   if (!jugador) return { error: 'Jugador no trobat.' }
 
-  if ((jugador as unknown as { estat?: string }).estat !== 'pendent_aprovacio') {
+  if (jugador.estat !== 'pendent_aprovacio') {
     return { error: 'Aquesta sol·licitud ja ha estat processada.' }
   }
 
