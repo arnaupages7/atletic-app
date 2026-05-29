@@ -103,6 +103,10 @@ export default async function JugadorsPage({
   const membreMap = Object.fromEntries((membreJugadors ?? []).map((m) => [m.id, m]))
   const equipMap = Object.fromEntries((equips ?? []).map((e) => [e.id, e]))
 
+  // Descompte germà: si ja hi ha algun jugador actiu, el segon en paga menys
+  const teGerma = (jugadors ?? []).some((j) => j.estat === 'actiu')
+  const importBase = teGerma ? 27500 : 30000
+
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
@@ -211,7 +215,7 @@ export default async function JugadorsPage({
                       <p className="text-xs text-muted-foreground mb-2">
                         La inscripció ha estat aprovada. Completa el pagament per activar la plaça.
                       </p>
-                      <PagarQuotaButton jugadorId={jugador.id} />
+                      <PagarQuotaButton jugadorId={jugador.id} importBase={importBase} />
                     </div>
                   )}
                 </CardContent>
