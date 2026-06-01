@@ -36,9 +36,11 @@ function FieldError({
 export function InscripcioForm({ equips }: { equips: Equip[] }) {
   const [state, action, pending] = useActionState(inscriureJugadorAction, undefined)
   const [fotoNom, setFotoNom] = useState<string | null>(null)
+  const v = state?.values ?? {}
 
   return (
-    <form action={action} encType="multipart/form-data" className="space-y-8">
+    // key força remuntatge quan hi ha un nou error → defaultValue i defaultChecked s'apliquen
+    <form key={state?.timestamp ?? 0} action={action} encType="multipart/form-data" className="space-y-8">
       {/* Error general */}
       {state?.error && (
         <div
@@ -65,6 +67,7 @@ export function InscripcioForm({ equips }: { equips: Equip[] }) {
               id="nom"
               name="nom"
               autoComplete="off"
+              defaultValue={v.nom}
               aria-invalid={!!state?.errors?.nom}
               required
             />
@@ -77,6 +80,7 @@ export function InscripcioForm({ equips }: { equips: Equip[] }) {
               id="cognom1"
               name="cognom1"
               autoComplete="off"
+              defaultValue={v.cognom1}
               aria-invalid={!!state?.errors?.cognom1}
               required
             />
@@ -88,7 +92,7 @@ export function InscripcioForm({ equips }: { equips: Equip[] }) {
               Segon cognom{' '}
               <span className="text-muted-foreground font-normal">(opcional)</span>
             </Label>
-            <Input id="cognom2" name="cognom2" autoComplete="off" />
+            <Input id="cognom2" name="cognom2" autoComplete="off" defaultValue={v.cognom2} />
           </div>
 
           <div className="space-y-1.5">
@@ -98,6 +102,7 @@ export function InscripcioForm({ equips }: { equips: Equip[] }) {
               name="data_naixement"
               type="date"
               max={new Date().toISOString().split('T')[0]}
+              defaultValue={v.data_naixement}
               aria-invalid={!!state?.errors?.data_naixement}
               required
             />
@@ -111,6 +116,7 @@ export function InscripcioForm({ equips }: { equips: Equip[] }) {
               name="dni"
               placeholder="12345678A"
               autoComplete="off"
+              defaultValue={v.dni}
               aria-invalid={!!state?.errors?.dni}
               required
             />
@@ -119,7 +125,7 @@ export function InscripcioForm({ equips }: { equips: Equip[] }) {
 
           <div className="space-y-1.5">
             <Label htmlFor="genere">Gènere</Label>
-            <Select name="genere">
+            <Select name="genere" defaultValue={v.genere}>
               <SelectTrigger id="genere">
                 <SelectValue placeholder="Selecciona…" />
               </SelectTrigger>
@@ -142,7 +148,7 @@ export function InscripcioForm({ equips }: { equips: Equip[] }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5 sm:col-span-2">
             <Label htmlFor="equip_id">Equip</Label>
-            <Select name="equip_id" required>
+            <Select name="equip_id" defaultValue={v.equip_id} required>
               <SelectTrigger id="equip_id" aria-invalid={!!state?.errors?.equip_id}>
                 <SelectValue placeholder="Selecciona equip…" />
               </SelectTrigger>
@@ -164,7 +170,7 @@ export function InscripcioForm({ equips }: { equips: Equip[] }) {
 
           <div className="space-y-1.5">
             <Label htmlFor="talla_samarreta">Talla de samarreta</Label>
-            <Select name="talla_samarreta" required>
+            <Select name="talla_samarreta" defaultValue={v.talla_samarreta} required>
               <SelectTrigger
                 id="talla_samarreta"
                 aria-invalid={!!state?.errors?.talla_samarreta}
@@ -203,6 +209,7 @@ export function InscripcioForm({ equips }: { equips: Equip[] }) {
               name="num_catsalut"
               placeholder="1234567890A"
               autoComplete="off"
+              defaultValue={v.num_catsalut}
               aria-invalid={!!state?.errors?.num_catsalut}
               required
             />
@@ -289,6 +296,7 @@ export function InscripcioForm({ equips }: { equips: Equip[] }) {
               id="adreca"
               name="adreca"
               placeholder="Carrer de les Flors, 12, 1r 1a"
+              defaultValue={v.adreca}
               aria-invalid={!!state?.errors?.adreca}
               required
             />
@@ -302,6 +310,7 @@ export function InscripcioForm({ equips }: { equips: Equip[] }) {
               name="telefon"
               type="tel"
               placeholder="600 000 000"
+              defaultValue={v.telefon}
               aria-invalid={!!state?.errors?.telefon}
               required
             />
@@ -325,7 +334,7 @@ export function InscripcioForm({ equips }: { equips: Equip[] }) {
               id="consentiment_privacitat"
               name="consentiment_privacitat"
               value="on"
-              required
+              defaultChecked={v.consentiment_privacitat === 'on'}
               aria-invalid={!!state?.errors?.consentiment_privacitat}
             />
             <div className="space-y-1">
@@ -354,6 +363,7 @@ export function InscripcioForm({ equips }: { equips: Equip[] }) {
               id="consentiment_comunicacions"
               name="consentiment_comunicacions"
               value="on"
+              defaultChecked={v.consentiment_comunicacions === 'on'}
             />
             <Label
               htmlFor="consentiment_comunicacions"

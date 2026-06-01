@@ -59,6 +59,7 @@ const GENERES = [
 export function RegistreForm() {
   const [state, action, pending] = useActionState(registreAction, undefined)
   const errors = state?.errors
+  const v = state?.values ?? {}
 
   return (
     <div className="w-full max-w-lg mx-auto px-4 py-8">
@@ -86,7 +87,8 @@ export function RegistreForm() {
         </div>
       )}
 
-      <form action={action} className="space-y-8">
+      {/* key força el remuntatge quan hi ha un nou error → defaultValue i defaultChecked s'apliquen */}
+      <form key={state?.timestamp ?? 0} action={action} className="space-y-8">
         {/* ── Compte ── */}
         <section className="space-y-4">
           <div>
@@ -101,6 +103,7 @@ export function RegistreForm() {
                 type="email"
                 autoComplete="email"
                 placeholder="nom@exemple.cat"
+                defaultValue={v.email}
                 aria-invalid={!!errors?.email}
               />
             </Field>
@@ -138,6 +141,7 @@ export function RegistreForm() {
                 id="nom"
                 name="nom"
                 autoComplete="given-name"
+                defaultValue={v.nom}
                 aria-invalid={!!errors?.nom}
               />
             </Field>
@@ -146,17 +150,19 @@ export function RegistreForm() {
                 id="cognom1"
                 name="cognom1"
                 autoComplete="family-name"
+                defaultValue={v.cognom1}
                 aria-invalid={!!errors?.cognom1}
               />
             </Field>
             <Field label="Segon cognom" id="cognom2" errors={errors}>
-              <Input id="cognom2" name="cognom2" autoComplete="additional-name" />
+              <Input id="cognom2" name="cognom2" autoComplete="additional-name" defaultValue={v.cognom2} />
             </Field>
             <Field label="DNI / NIE" id="dni" required errors={errors}>
               <Input
                 id="dni"
                 name="dni"
                 placeholder="12345678A"
+                defaultValue={v.dni}
                 aria-invalid={!!errors?.dni}
               />
             </Field>
@@ -165,11 +171,12 @@ export function RegistreForm() {
                 id="data_naixement"
                 name="data_naixement"
                 type="date"
+                defaultValue={v.data_naixement}
                 aria-invalid={!!errors?.data_naixement}
               />
             </Field>
             <Field label="Gènere" id="genere" errors={errors}>
-              <Select name="genere">
+              <Select name="genere" defaultValue={v.genere}>
                 <SelectTrigger id="genere">
                   <SelectValue placeholder="Selecciona…" />
                 </SelectTrigger>
@@ -183,7 +190,7 @@ export function RegistreForm() {
               </Select>
             </Field>
             <Field label="Talla samarreta" id="talla_samarreta" errors={errors}>
-              <Select name="talla_samarreta">
+              <Select name="talla_samarreta" defaultValue={v.talla_samarreta}>
                 <SelectTrigger id="talla_samarreta">
                   <SelectValue placeholder="Selecciona…" />
                 </SelectTrigger>
@@ -212,6 +219,7 @@ export function RegistreForm() {
                 type="tel"
                 autoComplete="tel"
                 placeholder="600 000 000"
+                defaultValue={v.telefon}
                 aria-invalid={!!errors?.telefon}
               />
             </Field>
@@ -221,6 +229,7 @@ export function RegistreForm() {
               id="adreca"
               name="adreca"
               autoComplete="street-address"
+              defaultValue={v.adreca}
               aria-invalid={!!errors?.adreca}
             />
           </Field>
@@ -231,6 +240,7 @@ export function RegistreForm() {
                 name="codi_postal"
                 autoComplete="postal-code"
                 placeholder="17820"
+                defaultValue={v.codi_postal}
                 aria-invalid={!!errors?.codi_postal}
               />
             </Field>
@@ -241,6 +251,7 @@ export function RegistreForm() {
                   name="poblacio"
                   autoComplete="address-level2"
                   placeholder="Banyoles"
+                  defaultValue={v.poblacio}
                   aria-invalid={!!errors?.poblacio}
                 />
               </Field>
@@ -258,8 +269,8 @@ export function RegistreForm() {
             <Checkbox
               id="consentiment_privacitat"
               name="consentiment_privacitat"
+              defaultChecked={v.consentiment_privacitat === 'on'}
               aria-invalid={!!errors?.consentiment_privacitat}
-              required
             />
             <div className="space-y-1">
               <Label htmlFor="consentiment_privacitat" className="text-sm leading-snug cursor-pointer">
@@ -277,6 +288,7 @@ export function RegistreForm() {
             <Checkbox
               id="consentiment_comunicacions"
               name="consentiment_comunicacions"
+              defaultChecked={v.consentiment_comunicacions === 'on'}
             />
             <Label htmlFor="consentiment_comunicacions" className="text-sm leading-snug cursor-pointer">
               Accepto rebre comunicacions i novetats del club per correu electrònic

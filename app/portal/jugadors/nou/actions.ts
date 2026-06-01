@@ -9,8 +9,19 @@ export type InscripcioState =
   | {
       errors?: Record<string, string[]>
       error?: string
+      /** Valors enviats — per repoblar el formulari en cas d'error */
+      values?: Record<string, string>
+      timestamp?: number
     }
   | undefined
+
+function extractValues(formData: FormData): Record<string, string> {
+  const out: Record<string, string> = {}
+  for (const [k, v] of formData.entries()) {
+    if (typeof v === 'string') out[k] = v
+  }
+  return out
+}
 
 // Extensió màxima de fitxer: 5 MB
 const MAX_FILE_SIZE = 5 * 1024 * 1024
@@ -49,13 +60,13 @@ export async function inscriureJugadorAction(
   const fotoFile = formData.get('foto_fitxa') as File | null
 
   if (!fotoFile || fotoFile.size === 0) {
-    return { errors: { foto_fitxa: ['La foto del jugador és obligatòria.'] } }
+    return { errors: { foto_fitxa: ['La foto del jugador és obligatòria.'] }, values: extractValues(formData), timestamp: Date.now() }
   }
   if (!ACCEPTED_IMAGE_TYPES.includes(fotoFile.type)) {
-    return { errors: { foto_fitxa: ['Formats acceptats: JPG, PNG o WebP.'] } }
+    return { errors: { foto_fitxa: ['Formats acceptats: JPG, PNG o WebP.'] }, values: extractValues(formData), timestamp: Date.now() }
   }
   if (fotoFile.size > MAX_FILE_SIZE) {
-    return { errors: { foto_fitxa: ['La foto no pot superar els 5 MB.'] } }
+    return { errors: { foto_fitxa: ['La foto no pot superar els 5 MB.'] }, values: extractValues(formData), timestamp: Date.now() }
   }
 
   // ── 4. Validar resta del formulari (Zod) ─────────────────────
@@ -68,6 +79,8 @@ export async function inscriureJugadorAction(
   if (!parsed.success) {
     return {
       errors: parsed.error.flatten().fieldErrors as Record<string, string[]>,
+      values: extractValues(formData),
+      timestamp: Date.now(),
     }
   }
 

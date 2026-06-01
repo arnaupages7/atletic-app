@@ -9,8 +9,19 @@ export type RegistreState =
   | {
       errors?: Record<string, string[]>
       error?: string
+      /** Valors enviats — per repoblar el formulari en cas d'error */
+      values?: Record<string, string>
+      timestamp?: number
     }
   | undefined
+
+function extractValues(formData: FormData, exclude: string[] = []): Record<string, string> {
+  const out: Record<string, string> = {}
+  for (const [k, v] of formData.entries()) {
+    if (!exclude.includes(k) && typeof v === 'string') out[k] = v
+  }
+  return out
+}
 
 export async function registreAction(
   _prevState: RegistreState,
@@ -21,7 +32,11 @@ export async function registreAction(
   const parsed = RegistreSchema.safeParse(raw)
 
   if (!parsed.success) {
-    return { errors: parsed.error.flatten().fieldErrors as Record<string, string[]> }
+    return {
+      errors: parsed.error.flatten().fieldErrors as Record<string, string[]>,
+      values: extractValues(formData, ['password', 'password_confirm']),
+      timestamp: Date.now(),
+    }
   }
 
   const data = parsed.data
@@ -36,10 +51,11 @@ export async function registreAction(
     })
 
   if (authError) {
+    const values = extractValues(formData, ['password', 'password_confirm'])
     if (authError.message.toLowerCase().includes('already registered')) {
-      return { errors: { email: ['Aquest correu ja està registrat.'] } }
+      return { errors: { email: ['Aquest correu ja està registrat.'] }, values, timestamp: Date.now() }
     }
-    return { error: 'No s\'ha pogut crear el compte. Torna-ho a intentar.' }
+    return { error: 'No s\'ha pogut crear el compte. Torna-ho a intentar.', values, timestamp: Date.now() }
   }
 
   const userId = authData.user.id
