@@ -5,6 +5,15 @@ import { createServiceClient } from '@/lib/supabase/server'
 import { stripe } from '@/lib/stripe'
 import { RegistreSchema } from './schema'
 
+function calcularEdat(isoDate: string): number {
+  const avui = new Date()
+  const naix = new Date(isoDate)
+  let edat = avui.getFullYear() - naix.getFullYear()
+  const m = avui.getMonth() - naix.getMonth()
+  if (m < 0 || (m === 0 && avui.getDate() < naix.getDate())) edat--
+  return edat
+}
+
 export type RegistreState =
   | {
       errors?: Record<string, string[]>
@@ -96,6 +105,7 @@ export async function registreAction(
   }
 
   // 4. Crear registre a `socis`
+  const esMenor = calcularEdat(data.data_naixement) < 18
   const { error: sociError } = await supabase.from('socis').insert({
     id: membre.id,
     user_id: userId,
@@ -110,6 +120,10 @@ export async function registreAction(
     consentiment_privacitat: true,
     consentiment_comunicacions: data.consentiment_comunicacions === 'on',
     estat: 'pendent_pagament',
+    es_menor: esMenor,
+    tutor_nom: esMenor ? (data.tutor_nom?.trim() || null) : null,
+    tutor_dni: esMenor ? (data.tutor_dni?.toUpperCase() || null) : null,
+    tutor_relacio: esMenor ? (data.tutor_relacio || null) : null,
   })
 
   if (sociError) {

@@ -1,6 +1,15 @@
 import { z } from 'zod'
 import { validarDNI } from '@/lib/dni'
 
+function calcularEdat(isoDate: string): number {
+  const avui = new Date()
+  const naix = new Date(isoDate)
+  let edat = avui.getFullYear() - naix.getFullYear()
+  const m = avui.getMonth() - naix.getMonth()
+  if (m < 0 || (m === 0 && avui.getDate() < naix.getDate())) edat--
+  return edat
+}
+
 export const RegistreSchema = z
   .object({
     // Compte
@@ -37,10 +46,38 @@ export const RegistreSchema = z
       error: 'Cal acceptar la política de privacitat per continuar.',
     }),
     consentiment_comunicacions: z.string().optional(),
+
+    // Tutor legal (obligatori si menor de 18 — validat a superRefine)
+    tutor_nom: z.string().optional(),
+    tutor_dni: z.string().optional(),
+    tutor_relacio: z.enum(['pare_mare', 'tutor_legal', 'altre']).optional(),
+    consentiment_tutor: z.string().optional(),
   })
-  .refine((d) => d.password === d.password_confirm, {
-    error: 'Les contrasenyes no coincideixen.',
-    path: ['password_confirm'],
+  .superRefine((d, ctx) => {
+    // Contrasenyes
+    if (d.password !== d.password_confirm) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Les contrasenyes no coincideixen.',
+        path: ['password_confirm'],
+      })
+    }
+
+    // Tutor legal si menor de 18
+    if (d.data_naixement && calcularEdat(d.data_naixement) < 18) {
+      if (!d.tutor_nom?.trim()) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'El nom complet del representant és obligatori.', path: ['tutor_nom'] })
+      }
+      if (!d.tutor_dni?.trim() || !validarDNI(d.tutor_dni)) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'El DNI/NIE del representant no és vàlid.', path: ['tutor_dni'] })
+      }
+      if (!d.tutor_relacio) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'La relació amb el menor és obligatòria.', path: ['tutor_relacio'] })
+      }
+      if (d.consentiment_tutor !== 'on') {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Cal el consentiment del representant legal.', path: ['consentiment_tutor'] })
+      }
+    }
   })
 
 export type RegistreInput = z.infer<typeof RegistreSchema>

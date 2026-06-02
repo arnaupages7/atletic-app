@@ -16,10 +16,11 @@ const MESOS = [
 
 interface DateSelectProps {
   name: string
-  defaultValue?: string   // ISO: YYYY-MM-DD
-  maxYear?: number        // any màxim seleccionable (defecte: any actual)
-  minYear?: number        // any mínim seleccionable (defecte: actual - 100)
+  defaultValue?: string       // ISO: YYYY-MM-DD
+  maxYear?: number            // any màxim seleccionable (defecte: any actual)
+  minYear?: number            // any mínim seleccionable (defecte: 1900)
   invalid?: boolean
+  onDateChange?: (iso: string) => void  // s'invoca quan canvia qualsevol part
 }
 
 export function DateSelect({
@@ -28,6 +29,7 @@ export function DateSelect({
   maxYear,
   minYear,
   invalid,
+  onDateChange,
 }: DateSelectProps) {
   const parts = defaultValue?.split('-') ?? []
   const [year, setYear] = useState(parts[0] ?? '')
@@ -48,22 +50,37 @@ export function DateSelect({
 
   const isoValue = year && month && day ? `${year}-${month}-${day}` : ''
 
+  function notify(d: string, m: string, y: string) {
+    const iso = y && m && d ? `${y}-${m}-${d}` : ''
+    onDateChange?.(iso)
+  }
+
+  function handleDayChange(val: string | null) {
+    const d = val ?? ''
+    setDay(d)
+    notify(d, month, year)
+  }
+
   function handleMonthChange(val: string | null) {
     const m = val ?? ''
     setMonth(m)
-    if (day && year && m) {
+    let d = day
+    if (d && year && m) {
       const maxDay = new Date(parseInt(year), parseInt(m), 0).getDate()
-      if (parseInt(day) > maxDay) setDay('')
+      if (parseInt(d) > maxDay) { d = ''; setDay('') }
     }
+    notify(d, m, year)
   }
 
   function handleYearChange(val: string | null) {
     const y = val ?? ''
     setYear(y)
-    if (day && month && y) {
+    let d = day
+    if (d && month && y) {
       const maxDay = new Date(parseInt(y), parseInt(month), 0).getDate()
-      if (parseInt(day) > maxDay) setDay('')
+      if (parseInt(d) > maxDay) { d = ''; setDay('') }
     }
+    notify(d, month, y)
   }
 
   return (
@@ -72,7 +89,7 @@ export function DateSelect({
       <input type="hidden" name={name} value={isoValue} />
 
       {/* Dia */}
-      <Select value={day} onValueChange={(v) => setDay(v ?? '')}>
+      <Select value={day} onValueChange={handleDayChange}>
         <SelectTrigger
           className="w-[72px]"
           aria-label="Dia"
@@ -91,7 +108,7 @@ export function DateSelect({
       </Select>
 
       {/* Mes */}
-      <Select value={month} onValueChange={handleMonthChange}>
+      <Select value={month} onValueChange={(v) => handleMonthChange(v)}>
         <SelectTrigger
           className="flex-1"
           aria-label="Mes"
