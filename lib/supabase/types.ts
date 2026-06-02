@@ -103,6 +103,10 @@ export interface Database {
           consentiment_comunicacions: boolean
           data_alta: string | null
           estat: EstatSoci
+          es_menor: boolean
+          tutor_nom: string | null
+          tutor_dni: string | null
+          tutor_relacio: string | null
         }
         Insert: {
           id: string
@@ -120,6 +124,10 @@ export interface Database {
           consentiment_comunicacions?: boolean
           data_alta?: string | null
           estat?: EstatSoci
+          es_menor?: boolean
+          tutor_nom?: string | null
+          tutor_dni?: string | null
+          tutor_relacio?: string | null
         }
         Update: {
           id?: string
@@ -137,6 +145,10 @@ export interface Database {
           consentiment_comunicacions?: boolean
           data_alta?: string | null
           estat?: EstatSoci
+          es_menor?: boolean
+          tutor_nom?: string | null
+          tutor_dni?: string | null
+          tutor_relacio?: string | null
         }
         Relationships: []
       }
