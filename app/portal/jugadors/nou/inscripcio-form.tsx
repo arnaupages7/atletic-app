@@ -130,7 +130,7 @@ export function InscripcioForm({ equips }: { equips: Equip[] }) {
 
           <div className="space-y-1.5">
             <Label htmlFor="genere">Gènere</Label>
-            <Select name="genere" value={genere} onValueChange={setGenere}>
+            <Select name="genere" value={genere} onValueChange={(v) => setGenere(v ?? '')}>
               <SelectTrigger id="genere">
                 <SelectValue placeholder="Selecciona…" />
               </SelectTrigger>
@@ -153,7 +153,7 @@ export function InscripcioForm({ equips }: { equips: Equip[] }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5 sm:col-span-2">
             <Label htmlFor="equip_id">Equip</Label>
-            <Select name="equip_id" value={equipId} onValueChange={setEquipId} required>
+            <Select name="equip_id" value={equipId} onValueChange={(v) => setEquipId(v ?? '')} required>
               <SelectTrigger id="equip_id" aria-invalid={!!state?.errors?.equip_id}>
                 <SelectValue placeholder="Selecciona equip…" />
               </SelectTrigger>
@@ -175,7 +175,7 @@ export function InscripcioForm({ equips }: { equips: Equip[] }) {
 
           <div className="space-y-1.5">
             <Label htmlFor="talla_samarreta">Talla de samarreta</Label>
-            <Select name="talla_samarreta" value={talla} onValueChange={setTalla} required>
+            <Select name="talla_samarreta" value={talla} onValueChange={(v) => setTalla(v ?? '')} required>
               <SelectTrigger
                 id="talla_samarreta"
                 aria-invalid={!!state?.errors?.talla_samarreta}
