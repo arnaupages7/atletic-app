@@ -16,6 +16,7 @@ import {
 import { Separator } from '@/components/ui/separator'
 import { Upload, X, FileImage } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { DateSelect } from '@/components/ui/date-select'
 
 type Equip = { id: string; nom: string; places_disponibles: number | null }
 
@@ -102,14 +103,11 @@ export function InscripcioForm({ equips }: { equips: Equip[] }) {
 
           <div className="space-y-1.5">
             <Label htmlFor="data_naixement">Data de naixement</Label>
-            <Input
-              id="data_naixement"
+            <DateSelect
               name="data_naixement"
-              type="date"
-              max={new Date().toISOString().split('T')[0]}
               defaultValue={v.data_naixement}
-              aria-invalid={!!state?.errors?.data_naixement}
-              required
+              maxYear={new Date().getFullYear() - 4}
+              invalid={!!state?.errors?.data_naixement}
             />
             <FieldError errors={state?.errors} field="data_naixement" />
           </div>

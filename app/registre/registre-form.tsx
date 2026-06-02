@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { DateSelect } from '@/components/ui/date-select'
 
 function FieldError({ errors, field }: { errors?: Record<string, string[]>; field: string }) {
   const msgs = errors?.[field]
@@ -167,12 +168,11 @@ export function RegistreForm() {
               />
             </Field>
             <Field label="Data de naixement" id="data_naixement" required errors={errors}>
-              <Input
-                id="data_naixement"
+              <DateSelect
                 name="data_naixement"
-                type="date"
                 defaultValue={v.data_naixement}
-                aria-invalid={!!errors?.data_naixement}
+                maxYear={new Date().getFullYear() - 16}
+                invalid={!!errors?.data_naixement}
               />
             </Field>
             <Field label="Gènere" id="genere" errors={errors}>
