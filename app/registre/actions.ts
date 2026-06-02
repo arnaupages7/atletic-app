@@ -3,8 +3,8 @@
 import { redirect } from 'next/navigation'
 import { isRedirectError } from 'next/dist/client/components/redirect-error'
 import { createServiceClient } from '@/lib/supabase/server'
-import { stripe } from '@/lib/stripe'
 import { RegistreSchema } from './schema'
+import { enviarEmail } from '@/lib/email'
 
 function calcularEdat(isoDate: string): number {
   const avui = new Date()
@@ -147,36 +147,18 @@ async function _registreAction(formData: FormData): Promise<RegistreState> {
     return { error: 'Error intern creant el perfil. Torna-ho a intentar.' }
   }
 
-  // 5. Crear Stripe Checkout Session
-  let checkoutUrl: string
-  try {
-    const session = await stripe.checkout.sessions.create({
-      mode: 'subscription',
-      customer_email: data.email,
-      line_items: [
-        { price: process.env.STRIPE_PRICE_SOCI!, quantity: 1 },
-      ],
-      metadata: {
-        soci_id: membre.id,
-        user_id: userId,
-        numero_membre: String(membre.numero_membre),
+  // 5. Enviar email de benvinguda
+  if (data.email) {
+    await enviarEmail({
+      templateId: 'confirmacio_registre',
+      to: data.email,
+      variables: {
+        nom: data.nom,
+        email: data.email,
+        url_portal: `${process.env.NEXT_PUBLIC_APP_URL}/portal`,
       },
-      subscription_data: {
-        metadata: {
-          soci_id: membre.id,
-        },
-      },
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/exit?status=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/exit?status=cancel`,
     })
-    checkoutUrl = session.url!
-  } catch (stripeErr) {
-    console.error('[registreAction] Stripe error:', stripeErr)
-    // Rollback
-    await supabase.from('membres').delete().eq('id', membre.id)
-    await supabase.auth.admin.deleteUser(userId)
-    return { error: 'Error connectant amb el servei de pagament. Torna-ho a intentar.' }
   }
 
-  redirect(checkoutUrl)
+  redirect('/registre/confirmacio')
 }

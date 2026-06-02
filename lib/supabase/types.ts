@@ -428,6 +428,48 @@ export interface Database {
         }
         Relationships: []
       }
+      configuracio: {
+        Row: {
+          clau: string
+          valor: string | null
+          actualitzat_el: string
+        }
+        Insert: {
+          clau: string
+          valor?: string | null
+          actualitzat_el?: string
+        }
+        Update: {
+          clau?: string
+          valor?: string | null
+          actualitzat_el?: string
+        }
+        Relationships: []
+      }
+      email_templates: {
+        Row: {
+          id: string
+          nom: string
+          assumpte: string
+          cos_html: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          nom: string
+          assumpte: string
+          cos_html: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          nom?: string
+          assumpte?: string
+          cos_html?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: Record<string, never>
     Functions: {

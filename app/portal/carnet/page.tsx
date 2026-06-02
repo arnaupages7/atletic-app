@@ -34,21 +34,26 @@ interface CarnetProps {
   subtitol?: string
   tipus: 'soci' | 'jugador'
   qrDataUrl?: string
+  fonsUrl?: string | null
 }
 
-function Carnet({ nom, cognom1, cognom2, numeroMembre, temporada, subtitol, tipus, qrDataUrl }: CarnetProps) {
+function Carnet({ nom, cognom1, cognom2, numeroMembre, temporada, subtitol, tipus, qrDataUrl, fonsUrl }: CarnetProps) {
   const nomComplet = `${nom} ${cognom1}${cognom2 ? ` ${cognom2}` : ''}`
   const etiquetaTipus = tipus === 'soci' ? 'SOCI' : 'JUGADOR FUTBOL BASE'
+
+  const backgroundStyle: React.CSSProperties = fonsUrl
+    ? { backgroundImage: `url(${fonsUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+    : { background: 'linear-gradient(135deg, #ff6600 0%, #cc4400 100%)' }
 
   return (
     <div
       className="carnet"
       style={{
         ...printColorStyle,
+        ...backgroundStyle,
         width: '340px',
         height: '213px',
         borderRadius: '12px',
-        background: 'linear-gradient(135deg, #ff6600 0%, #cc4400 100%)',
         position: 'relative',
         overflow: 'hidden',
         boxShadow: '0 4px 24px rgba(0,0,0,0.18)',
@@ -189,6 +194,14 @@ export default async function CarnetPage() {
 
   const serviceSupabase = await createServiceClient()
 
+  // Fons carnet configurable
+  const { data: fonsRow } = await serviceSupabase
+    .from('configuracio')
+    .select('valor')
+    .eq('clau', 'carnet_fons_url')
+    .single()
+  const carnetFonsUrl = fonsRow?.valor ?? null
+
   // Dades del soci
   const { data: soci } = await supabase
     .from('socis')
@@ -310,6 +323,7 @@ export default async function CarnetPage() {
             temporada={temporada}
             tipus="soci"
             qrDataUrl={qrDataUrl}
+            fonsUrl={carnetFonsUrl}
           />
         </div>
 
@@ -334,6 +348,7 @@ export default async function CarnetPage() {
                 subtitol={equip?.nom}
                 tipus="jugador"
                 qrDataUrl={jugador.qrDataUrl}
+                fonsUrl={carnetFonsUrl}
               />
             </div>
           )

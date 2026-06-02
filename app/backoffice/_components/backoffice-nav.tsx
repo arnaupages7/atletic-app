@@ -11,6 +11,7 @@ import {
   Calendar,
   PlayCircle,
   Settings,
+  Settings2,
   LogOut,
   Menu,
   X,
@@ -37,6 +38,7 @@ const navItems = [
 
 const adminItems = [
   { href: '/backoffice/gestors', label: 'Gestors', icon: Settings, exact: false },
+  { href: '/backoffice/configuracio', label: 'Configuració', icon: Settings2, exact: false },
 ]
 
 export function BackofficeNav({ gestor }: { gestor: GestorInfo }) {

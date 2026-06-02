@@ -12,6 +12,7 @@ import {
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { Users, Calendar, PlayCircle, CreditCard, ChevronRight, AlertCircle, IdCard } from 'lucide-react'
+import { pagarQuotaSociAction } from './actions'
 
 export const metadata: Metadata = { title: 'Inici' }
 
@@ -101,20 +102,29 @@ export default async function PortalPage() {
 
       {/* Avís si pendent de pagament */}
       {soci.estat === 'pendent_pagament' && (
-        <div className="flex items-start gap-3 rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-950/30">
-          <AlertCircle className="size-5 text-yellow-600 dark:text-yellow-400 shrink-0 mt-0.5" />
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-              Quota de soci pendent
-            </p>
-            <p className="text-xs text-yellow-700 dark:text-yellow-300">
-              El teu registre és complet però el pagament de la quota anual (25€) encara no s&apos;ha processat.
-              Contacta amb el club a{' '}
-              <a href="mailto:administracio@atletic.cat" className="underline">
-                administracio@atletic.cat
-              </a>
-              .
-            </p>
+        <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-950/30">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="size-5 text-yellow-600 dark:text-yellow-400 shrink-0 mt-0.5" />
+            <div className="space-y-2 flex-1">
+              <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                Quota de soci pendent
+              </p>
+              <p className="text-xs text-yellow-700 dark:text-yellow-300">
+                El teu registre és complet però el pagament de la quota anual (25€) encara no
+                s&apos;ha processat. Fes clic a &quot;Paga ara&quot; per completar l&apos;alta.
+              </p>
+              <form action={pagarQuotaSociAction}>
+                <button
+                  type="submit"
+                  className={cn(
+                    buttonVariants({ size: 'sm' }),
+                    'mt-1 bg-yellow-600 hover:bg-yellow-700 text-white border-0'
+                  )}
+                >
+                  Paga ara (25€/any)
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       )}
