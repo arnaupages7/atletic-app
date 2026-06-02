@@ -7,14 +7,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { Pencil, Image as ImageIcon, Mail } from 'lucide-react'
+import { Pencil, Image as ImageIcon, Mail, Users } from 'lucide-react'
 import { ConfiguracioGeneralForm } from './_components/configuracio-general-form'
+import { EquipsConfigForm } from './_components/equips-config-form'
 
 export const metadata: Metadata = { title: 'Configuració' }
 
 const VARIABLES_PER_PLANTILLA: Record<string, string[]> = {
   confirmacio_registre: ['{{nom}}', '{{email}}', '{{url_portal}}'],
   confirmacio_pagament: ['{{nom}}', '{{numero_membre}}', '{{url_carnet}}'],
+  nou_event: ['{{nom}}', '{{titol_event}}', '{{data_event}}', '{{lloc}}', '{{url_events}}'],
+  inscripcio_aprovada: ['{{nom}}', '{{nom_jugador}}', '{{equip}}', '{{temporada}}', '{{import}}', '{{url_pagament}}'],
+  inscripcio_denegada: ['{{nom}}', '{{nom_jugador}}', '{{equip}}', '{{motiu}}'],
 }
 
 export default async function ConfiguracioPage() {
@@ -34,7 +38,7 @@ export default async function ConfiguracioPage() {
     .single()
   if (!gestorActual || gestorActual.rol !== 'admin') redirect('/backoffice')
 
-  // Dades configuració
+  // Configuració general
   const { data: configRows } = await serviceSupabase
     .from('configuracio')
     .select('clau, valor')
@@ -44,18 +48,25 @@ export default async function ConfiguracioPage() {
     config[row.clau] = row.valor
   }
 
-  // Plantilles de correu
+  // Plantilles
   const { data: plantilles } = await serviceSupabase
     .from('email_templates')
     .select('id, nom, assumpte, updated_at')
     .order('id')
+
+  // Equips actius
+  const { data: equips } = await serviceSupabase
+    .from('equips')
+    .select('id, nom, slug, temporada, preu_inscripcio, soci_automatic')
+    .eq('actiu', true)
+    .order('nom')
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Configuració</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Ajustos generals del portal i plantilles de correu electrònic.
+          Ajustos generals, quotes per equip i plantilles de correu.
         </p>
       </div>
 
@@ -64,6 +75,10 @@ export default async function ConfiguracioPage() {
           <TabsTrigger value="general" className="gap-1.5">
             <ImageIcon className="size-3.5" />
             General
+          </TabsTrigger>
+          <TabsTrigger value="equips" className="gap-1.5">
+            <Users className="size-3.5" />
+            Equips
           </TabsTrigger>
           <TabsTrigger value="plantilles" className="gap-1.5">
             <Mail className="size-3.5" />
@@ -77,12 +92,28 @@ export default async function ConfiguracioPage() {
             <CardHeader>
               <CardTitle className="text-base">Carnet digital</CardTitle>
               <CardDescription>
-                Imatge de fons del carnet de soci i jugador. Deixa el camp buit per usar el gradient
-                predeterminat.
+                Imatge de fons del carnet. Deixa buit per usar el gradient taronja per defecte.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <ConfiguracioGeneralForm carnetFonsUrl={config['carnet_fons_url'] ?? ''} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ── Tab Equips ──────────────────────────────── */}
+        <TabsContent value="equips" className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Quotes i soci automàtic per equip</CardTitle>
+              <CardDescription>
+                Configura el preu d&apos;inscripció de cada equip. Si marqueu &quot;Soci
+                automàtic&quot;, els jugadors s&apos;activen directament en ser aprovats sense
+                necessitat de pagament.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <EquipsConfigForm equips={equips ?? []} />
             </CardContent>
           </Card>
         </TabsContent>

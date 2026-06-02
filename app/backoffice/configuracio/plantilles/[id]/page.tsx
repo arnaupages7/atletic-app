@@ -22,6 +22,27 @@ const VARIABLES_PER_PLANTILLA: Record<string, { variable: string; descripcio: st
     { variable: '{{numero_membre}}', descripcio: 'Número de soci' },
     { variable: '{{url_carnet}}', descripcio: 'Enllaç al carnet digital' },
   ],
+  nou_event: [
+    { variable: '{{nom}}', descripcio: 'Nom del soci' },
+    { variable: '{{titol_event}}', descripcio: 'Títol de l\'event' },
+    { variable: '{{data_event}}', descripcio: 'Data i hora de l\'event' },
+    { variable: '{{lloc}}', descripcio: 'Lloc de l\'event (buit si no n\'hi ha)' },
+    { variable: '{{url_events}}', descripcio: 'Enllaç a la pàgina d\'events' },
+  ],
+  inscripcio_aprovada: [
+    { variable: '{{nom}}', descripcio: 'Nom del soci responsable' },
+    { variable: '{{nom_jugador}}', descripcio: 'Nom complet del jugador' },
+    { variable: '{{equip}}', descripcio: 'Nom de l\'equip' },
+    { variable: '{{temporada}}', descripcio: 'Temporada' },
+    { variable: '{{import}}', descripcio: 'Import a pagar' },
+    { variable: '{{url_pagament}}', descripcio: 'Enllaç Stripe per pagar (buit si és gratuït)' },
+  ],
+  inscripcio_denegada: [
+    { variable: '{{nom}}', descripcio: 'Nom del soci responsable' },
+    { variable: '{{nom_jugador}}', descripcio: 'Nom complet del jugador' },
+    { variable: '{{equip}}', descripcio: 'Nom de l\'equip' },
+    { variable: '{{motiu}}', descripcio: 'Motiu de la denegació' },
+  ],
 }
 
 export default async function PlantillaEditorPage({

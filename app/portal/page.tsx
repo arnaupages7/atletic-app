@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/card'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { Users, Calendar, PlayCircle, CreditCard, ChevronRight, AlertCircle, IdCard } from 'lucide-react'
+import { Users, Calendar, CreditCard, ChevronRight, AlertCircle, IdCard } from 'lucide-react'
 import { pagarQuotaSociAction } from './actions'
 
 export const metadata: Metadata = { title: 'Inici' }
@@ -69,14 +69,8 @@ export default async function PortalPage() {
     {
       href: '/portal/events',
       icon: Calendar,
-      label: 'Events',
-      descripcio: 'Activitats exclusives del club',
-    },
-    {
-      href: '/portal/videos',
-      icon: PlayCircle,
-      label: 'Vídeos exclusius',
-      descripcio: 'Continguts per als socis',
+      label: 'Events i partits',
+      descripcio: 'Partits en directe, activitats i actes del club',
     },
     {
       href: '/portal/pagaments',

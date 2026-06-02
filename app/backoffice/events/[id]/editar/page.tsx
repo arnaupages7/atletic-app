@@ -21,7 +21,7 @@ export default async function EditarEventPage({
 
   const { data: event } = await supabase
     .from('events')
-    .select('id, titol, descripcio, data_inici, data_fi, lloc, exclusiu_socis, publicat')
+    .select('id, titol, descripcio, data_inici, data_fi, lloc, imatge_url, embed_url, exclusiu_socis, publicat')
     .eq('id', id)
     .single()
 
@@ -54,6 +54,8 @@ export default async function EditarEventPage({
           data_inici: event.data_inici,
           data_fi: event.data_fi,
           lloc: event.lloc,
+          imatge_url: event.imatge_url,
+          embed_url: event.embed_url,
           exclusiu_socis: event.exclusiu_socis,
           publicat: event.publicat,
         }}

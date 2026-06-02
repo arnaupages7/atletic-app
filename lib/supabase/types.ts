@@ -221,6 +221,8 @@ export interface Database {
           temporada: string
           places_disponibles: number | null
           actiu: boolean
+          preu_inscripcio: number | null
+          soci_automatic: boolean
           created_at: string
         }
         Insert: {
@@ -231,6 +233,8 @@ export interface Database {
           temporada: string
           places_disponibles?: number | null
           actiu?: boolean
+          preu_inscripcio?: number | null
+          soci_automatic?: boolean
           created_at?: string
         }
         Update: {
@@ -241,6 +245,8 @@ export interface Database {
           temporada?: string
           places_disponibles?: number | null
           actiu?: boolean
+          preu_inscripcio?: number | null
+          soci_automatic?: boolean
           created_at?: string
         }
         Relationships: []
@@ -356,6 +362,8 @@ export interface Database {
           data_fi: string | null
           lloc: string | null
           imatge_url: string | null
+          embed_url: string | null
+          notificacio_enviada: boolean
           exclusiu_socis: boolean
           publicat: boolean
           autor_id: string | null
@@ -370,6 +378,8 @@ export interface Database {
           data_fi?: string | null
           lloc?: string | null
           imatge_url?: string | null
+          embed_url?: string | null
+          notificacio_enviada?: boolean
           exclusiu_socis?: boolean
           publicat?: boolean
           autor_id?: string | null
@@ -384,6 +394,8 @@ export interface Database {
           data_fi?: string | null
           lloc?: string | null
           imatge_url?: string | null
+          embed_url?: string | null
+          notificacio_enviada?: boolean
           exclusiu_socis?: boolean
           publicat?: boolean
           autor_id?: string | null

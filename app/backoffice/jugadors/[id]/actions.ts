@@ -2,8 +2,8 @@
 
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
-import { Resend } from 'resend'
 import { stripe } from '@/lib/stripe'
+import { enviarEmail } from '@/lib/email'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 
 // ── Aprovar jugador ──────────────────────────────────────────
@@ -12,8 +12,10 @@ export async function aprovarJugadorAction(jugadorId: string): Promise<{ error?:
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  const serviceSupabase = await createServiceClient()
+
   // Verificar gestor
-  const { data: gestor } = await (await createServiceClient())
+  const { data: gestor } = await serviceSupabase
     .from('gestors')
     .select('id')
     .eq('user_id', user.id)
@@ -21,9 +23,7 @@ export async function aprovarJugadorAction(jugadorId: string): Promise<{ error?:
     .single()
   if (!gestor) return { error: 'No tens permís per fer aquesta acció.' }
 
-  const serviceSupabase = await createServiceClient()
-
-  // Obtenir jugador + membre + soci responsable + membre del soci
+  // Obtenir jugador + membre + soci responsable + equip
   const { data: jugador } = await serviceSupabase
     .from('jugadors')
     .select(`
@@ -33,7 +33,7 @@ export async function aprovarJugadorAction(jugadorId: string): Promise<{ error?:
       temporada,
       equip_id,
       membres!inner(nom, cognom1, numero_membre),
-      equips(nom)
+      equips(nom, preu_inscripcio, soci_automatic)
     `)
     .eq('id', jugadorId)
     .single()
@@ -51,7 +51,42 @@ export async function aprovarJugadorAction(jugadorId: string): Promise<{ error?:
     .eq('id', jugador.soci_responsable_id)
     .single()
 
-  // Detectar descompte germà (¿té un altre jugador actiu?)
+  const jm = jugador.membres as unknown as { nom: string; cognom1: string; numero_membre: number }
+  const equip = jugador.equips as unknown as { nom: string; preu_inscripcio: number | null; soci_automatic: boolean } | null
+
+  // ── Soci automàtic: aprovar i activar sense pagament ──────
+  if (equip?.soci_automatic) {
+    const { error: updateError } = await serviceSupabase
+      .from('jugadors')
+      .update({ estat: 'actiu' })
+      .eq('id', jugadorId)
+
+    if (updateError) return { error: "Error actualitzant l'estat." }
+
+    // Email sense link de pagament
+    try {
+      await enviarEmail({
+        templateId: 'inscripcio_aprovada',
+        to: sociMembre?.email ?? '',
+        variables: {
+          nom: sociMembre?.nom ?? '',
+          nom_jugador: `${jm.nom} ${jm.cognom1}`,
+          equip: equip?.nom ?? '',
+          temporada: jugador.temporada,
+          import: 'Gratuït (primer equip)',
+          url_pagament: '',
+        },
+      })
+    } catch {
+      // Email no és bloquejant
+    }
+
+    return {}
+  }
+
+  // ── Flux normal: pagament requerit ──────────────────────────
+
+  // Descompte germà (té un altre jugador actiu?)
   const { count: altresActius } = await serviceSupabase
     .from('jugadors')
     .select('id', { count: 'exact', head: true })
@@ -59,10 +94,18 @@ export async function aprovarJugadorAction(jugadorId: string): Promise<{ error?:
     .eq('estat', 'actiu')
 
   const teGerma = (altresActius ?? 0) > 0
-  const importCents = teGerma ? 27500 : 30000 // 275€ o 300€
 
-  const jm = jugador.membres as unknown as { nom: string; cognom1: string; numero_membre: number }
-  const equip = jugador.equips as unknown as { nom: string } | null
+  // Preu: configurat per equip > descompte germà > preu per defecte
+  let importCents: number
+  if (equip?.preu_inscripcio != null) {
+    importCents = equip.preu_inscripcio
+  } else {
+    importCents = teGerma ? 27500 : 30000 // 275€ o 300€
+  }
+
+  const importText = teGerma && equip?.preu_inscripcio == null
+    ? `275 € (descompte germà aplicat)`
+    : `${(importCents / 100).toFixed(0)} €`
 
   // Actualitzar estat jugador a 'aprovada'
   const { error: updateError } = await serviceSupabase
@@ -70,9 +113,9 @@ export async function aprovarJugadorAction(jugadorId: string): Promise<{ error?:
     .update({ estat: 'aprovada' })
     .eq('id', jugadorId)
 
-  if (updateError) return { error: 'Error actualitzant l\'estat. Torna-ho a intentar.' }
+  if (updateError) return { error: "Error actualitzant l'estat. Torna-ho a intentar." }
 
-  // Crear Stripe Checkout (si Stripe configurat)
+  // Crear Stripe Checkout
   let checkoutUrl: string | null = null
   try {
     if (
@@ -107,31 +150,21 @@ export async function aprovarJugadorAction(jugadorId: string): Promise<{ error?:
     }
   } catch (stripeErr) {
     console.error('aprovar: error Stripe', stripeErr)
-    // No bloquejem — enviem email sense link de pagament
   }
 
   // Email al soci
   try {
-    const resend = new Resend(process.env.RESEND_API_KEY)
-    await resend.emails.send({
-      from: `Atlètic Club Banyoles <${process.env.RESEND_FROM_EMAIL ?? 'administracio@atletic.cat'}>`,
-      to: sociMembre?.email ?? 'administracio@atletic.cat',
-      subject: `Inscripció aprovada — ${jm.nom} ${jm.cognom1}`,
-      html: `
-        <h2>La inscripció ha estat aprovada</h2>
-        <p>Hola ${sociMembre?.nom ?? ''},</p>
-        <p>La sol·licitud d'inscripció de <strong>${jm.nom} ${jm.cognom1}</strong>
-        a l'equip <strong>${equip?.nom ?? ''}</strong> (temporada ${jugador.temporada}) ha estat <strong>aprovada</strong>.</p>
-
-        <p>Import de la quota: <strong>${teGerma ? '275 €' : '300 €'}${teGerma ? ' (descompte germà aplicat)' : ''}</strong></p>
-
-        ${checkoutUrl
-          ? `<p style="margin:24px 0"><a href="${checkoutUrl}" style="background:#1a1a1a;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600">Pagar la quota ara</a></p>`
-          : `<p>El club et farà arribar l'enllaç de pagament en breu.</p>`
-        }
-
-        <p style="color:#888;font-size:12px;margin-top:32px">Atlètic Club Banyoles — portal.atletic.cat</p>
-      `,
+    await enviarEmail({
+      templateId: 'inscripcio_aprovada',
+      to: sociMembre?.email ?? '',
+      variables: {
+        nom: sociMembre?.nom ?? '',
+        nom_jugador: `${jm.nom} ${jm.cognom1}`,
+        equip: equip?.nom ?? '',
+        temporada: jugador.temporada,
+        import: importText,
+        url_pagament: checkoutUrl ?? '',
+      },
     })
   } catch (emailErr) {
     console.error('aprovar: error email', emailErr)
@@ -156,7 +189,9 @@ export async function denegarJugadorAction(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: gestor } = await (await createServiceClient())
+  const serviceSupabase = await createServiceClient()
+
+  const { data: gestor } = await serviceSupabase
     .from('gestors')
     .select('id')
     .eq('user_id', user.id)
@@ -168,8 +203,6 @@ export async function denegarJugadorAction(
   if (!parsed.success) {
     return { errors: parsed.error.flatten().fieldErrors as Record<string, string[]> }
   }
-
-  const serviceSupabase = await createServiceClient()
 
   // Obtenir jugador + soci
   const { data: jugador } = await serviceSupabase
@@ -197,27 +230,22 @@ export async function denegarJugadorAction(
     .update({ estat: 'denegada', motiu_denegacio: parsed.data.motiu })
     .eq('id', jugadorId)
 
-  if (updateError) return { error: 'Error actualitzant l\'estat.' }
+  if (updateError) return { error: "Error actualitzant l'estat." }
 
   const jm = jugador.membres as unknown as { nom: string; cognom1: string }
   const equip = jugador.equips as unknown as { nom: string } | null
 
   // Email al soci
   try {
-    const resend = new Resend(process.env.RESEND_API_KEY)
-    await resend.emails.send({
-      from: `Atlètic Club Banyoles <${process.env.RESEND_FROM_EMAIL ?? 'administracio@atletic.cat'}>`,
-      to: sociMembre?.email ?? 'administracio@atletic.cat',
-      subject: `Sol·licitud denegada — ${jm.nom} ${jm.cognom1}`,
-      html: `
-        <h2>Sol·licitud d'inscripció no acceptada</h2>
-        <p>Hola ${sociMembre?.nom ?? ''},</p>
-        <p>La sol·licitud d'inscripció de <strong>${jm.nom} ${jm.cognom1}</strong>
-        a l'equip <strong>${equip?.nom ?? ''}</strong> ha estat <strong>denegada</strong>.</p>
-        <p><strong>Motiu:</strong> ${parsed.data.motiu}</p>
-        <p>Si tens dubtes, posa't en contacte amb el club a <a href="mailto:administracio@atletic.cat">administracio@atletic.cat</a>.</p>
-        <p style="color:#888;font-size:12px;margin-top:32px">Atlètic Club Banyoles — portal.atletic.cat</p>
-      `,
+    await enviarEmail({
+      templateId: 'inscripcio_denegada',
+      to: sociMembre?.email ?? '',
+      variables: {
+        nom: sociMembre?.nom ?? '',
+        nom_jugador: `${jm.nom} ${jm.cognom1}`,
+        equip: equip?.nom ?? '',
+        motiu: parsed.data.motiu,
+      },
     })
   } catch (emailErr) {
     console.error('denegar: error email', emailErr)

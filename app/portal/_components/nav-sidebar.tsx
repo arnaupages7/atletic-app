@@ -9,7 +9,6 @@ import {
   User,
   Users,
   Calendar,
-  PlayCircle,
   CreditCard,
   IdCard,
   LogOut,
@@ -34,8 +33,7 @@ const navItems = [
   { href: '/portal/perfil', label: 'Perfil', icon: User, exact: false },
   { href: '/portal/carnet', label: 'El meu carnet', icon: IdCard, exact: false },
   { href: '/portal/jugadors', label: 'Els meus jugadors', icon: Users, exact: false },
-  { href: '/portal/events', label: 'Events', icon: Calendar, exact: false },
-  { href: '/portal/videos', label: 'Vídeos', icon: PlayCircle, exact: false },
+  { href: '/portal/events', label: 'Events i partits', icon: Calendar, exact: false },
   { href: '/portal/pagaments', label: 'Pagaments', icon: CreditCard, exact: false },
 ]
 

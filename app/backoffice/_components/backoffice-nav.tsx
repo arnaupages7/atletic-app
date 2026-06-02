@@ -9,7 +9,6 @@ import {
   Users,
   UserCheck,
   Calendar,
-  PlayCircle,
   Settings,
   Settings2,
   LogOut,
@@ -32,8 +31,7 @@ const navItems = [
   { href: '/backoffice', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { href: '/backoffice/jugadors', label: 'Jugadors', icon: UserCheck, exact: false },
   { href: '/backoffice/socis', label: 'Socis', icon: Users, exact: false },
-  { href: '/backoffice/events', label: 'Events', icon: Calendar, exact: false },
-  { href: '/backoffice/videos', label: 'Vídeos', icon: PlayCircle, exact: false },
+  { href: '/backoffice/events', label: 'Events i partits', icon: Calendar, exact: false },
 ]
 
 const adminItems = [

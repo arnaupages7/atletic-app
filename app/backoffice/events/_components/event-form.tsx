@@ -1,12 +1,13 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Save } from 'lucide-react'
+import { ImageUpload } from '@/components/ui/image-upload'
+import { Save, Video } from 'lucide-react'
 
 export type EventFormState = {
   error?: string
@@ -19,6 +20,8 @@ type EventDefaults = {
   data_inici?: string
   data_fi?: string | null
   lloc?: string | null
+  imatge_url?: string | null
+  embed_url?: string | null
   exclusiu_socis?: boolean
   publicat?: boolean
 }
@@ -32,6 +35,7 @@ type Props = {
 
 export function EventForm({ action, defaults, submitLabel = 'Desar', pendingLabel = 'Desant…' }: Props) {
   const [state, formAction, pending] = useActionState<EventFormState, FormData>(action, undefined)
+  const [imatgeUrl, setImatgeUrl] = useState<string | null>(defaults?.imatge_url ?? null)
 
   const toDatetimeLocal = (iso: string | null | undefined) => {
     if (!iso) return ''
@@ -40,6 +44,9 @@ export function EventForm({ action, defaults, submitLabel = 'Desar', pendingLabe
 
   return (
     <form action={formAction} className="space-y-5">
+      {/* Hidden field per a imatge_url (actualitzat per ImageUpload) */}
+      <input type="hidden" name="imatge_url" value={imatgeUrl ?? ''} />
+
       {state?.error && (
         <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
           {state.error}
@@ -109,6 +116,38 @@ export function EventForm({ action, defaults, submitLabel = 'Desar', pendingLabe
           defaultValue={defaults?.lloc ?? ''}
           placeholder="Camp Municipal de Banyoles…"
         />
+      </div>
+
+      {/* Imatge de portada */}
+      <div className="space-y-1.5">
+        <Label>Imatge de portada</Label>
+        <ImageUpload
+          value={imatgeUrl}
+          onUrlChange={setImatgeUrl}
+          carpeta="events"
+        />
+        {imatgeUrl && (
+          <p className="text-xs text-muted-foreground break-all">{imatgeUrl}</p>
+        )}
+      </div>
+
+      {/* Vídeo incrustat */}
+      <div className="space-y-1.5">
+        <Label htmlFor="embed_url" className="flex items-center gap-1.5">
+          <Video className="size-4 text-muted-foreground" />
+          URL de vídeo incrustat
+        </Label>
+        <Input
+          id="embed_url"
+          name="embed_url"
+          type="url"
+          defaultValue={defaults?.embed_url ?? ''}
+          placeholder="https://www.youtube.com/embed/VIDEO_ID"
+        />
+        <p className="text-xs text-muted-foreground">
+          URL d&apos;incrustació (embed) de YouTube, Twitch o similar. Per a YouTube:
+          copia l&apos;URL del format <code className="text-xs bg-muted px-1 rounded">youtube.com/embed/ID</code>.
+        </p>
       </div>
 
       {/* Opcions */}
