@@ -171,7 +171,7 @@ export function RegistreForm() {
               <DateSelect
                 name="data_naixement"
                 defaultValue={v.data_naixement}
-                maxYear={new Date().getFullYear() - 16}
+                maxYear={new Date().getFullYear()}
                 invalid={!!errors?.data_naixement}
               />
             </Field>
