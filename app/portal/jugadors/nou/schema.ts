@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { validarDNI } from '@/lib/dni'
 
 export const InscripcioJugadorSchema = z.object({
   // Dades personals del jugador
@@ -7,7 +8,11 @@ export const InscripcioJugadorSchema = z.object({
   cognom2: z.string().trim().optional(),
   data_naixement: z.string().min(1, { error: 'La data de naixement és obligatòria.' }),
   genere: z.enum(['M', 'F', 'A']).optional(),
-  dni: z.string().min(9, { error: 'El DNI/NIE és obligatori (mínim 9 caràcters).' }).trim(),
+  dni: z
+    .string()
+    .min(1, { error: 'El DNI/NIE és obligatori.' })
+    .trim()
+    .refine(validarDNI, { error: 'DNI/NIE no vàlid. Comprova el format i la lletra de control.' }),
 
   // Inscripció esportiva
   equip_id: z.string().uuid({ error: 'Selecciona un equip vàlid.' }),

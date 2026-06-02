@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { validarDNI } from '@/lib/dni'
 
 export const RegistreSchema = z
   .object({
@@ -13,7 +14,11 @@ export const RegistreSchema = z
     nom: z.string().min(1, { error: 'El nom és obligatori.' }).trim(),
     cognom1: z.string().min(1, { error: 'El primer cognom és obligatori.' }).trim(),
     cognom2: z.string().trim().optional(),
-    dni: z.string().min(1, { error: 'El DNI/NIE és obligatori.' }).trim(),
+    dni: z
+      .string()
+      .min(1, { error: 'El DNI/NIE és obligatori.' })
+      .trim()
+      .refine(validarDNI, { error: 'DNI/NIE no vàlid. Comprova el format i la lletra de control.' }),
     data_naixement: z.string().min(1, { error: 'La data de naixement és obligatòria.' }),
     genere: z.string().optional(),
     talla_samarreta: z

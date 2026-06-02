@@ -38,6 +38,11 @@ export function InscripcioForm({ equips }: { equips: Equip[] }) {
   const [fotoNom, setFotoNom] = useState<string | null>(null)
   const v = state?.values ?? {}
 
+  // Selects controlats per evitar que Radix mostri el UUID en lloc del nom
+  const [equipId, setEquipId] = useState(v.equip_id ?? '')
+  const [talla, setTalla] = useState(v.talla_samarreta ?? '')
+  const [genere, setGenere] = useState(v.genere ?? '')
+
   return (
     // key força remuntatge quan hi ha un nou error → defaultValue i defaultChecked s'apliquen
     <form key={state?.timestamp ?? 0} action={action} encType="multipart/form-data" className="space-y-8">
@@ -125,7 +130,7 @@ export function InscripcioForm({ equips }: { equips: Equip[] }) {
 
           <div className="space-y-1.5">
             <Label htmlFor="genere">Gènere</Label>
-            <Select name="genere" defaultValue={v.genere}>
+            <Select name="genere" value={genere} onValueChange={setGenere}>
               <SelectTrigger id="genere">
                 <SelectValue placeholder="Selecciona…" />
               </SelectTrigger>
@@ -148,7 +153,7 @@ export function InscripcioForm({ equips }: { equips: Equip[] }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5 sm:col-span-2">
             <Label htmlFor="equip_id">Equip</Label>
-            <Select name="equip_id" defaultValue={v.equip_id} required>
+            <Select name="equip_id" value={equipId} onValueChange={setEquipId} required>
               <SelectTrigger id="equip_id" aria-invalid={!!state?.errors?.equip_id}>
                 <SelectValue placeholder="Selecciona equip…" />
               </SelectTrigger>
@@ -170,7 +175,7 @@ export function InscripcioForm({ equips }: { equips: Equip[] }) {
 
           <div className="space-y-1.5">
             <Label htmlFor="talla_samarreta">Talla de samarreta</Label>
-            <Select name="talla_samarreta" defaultValue={v.talla_samarreta} required>
+            <Select name="talla_samarreta" value={talla} onValueChange={setTalla} required>
               <SelectTrigger
                 id="talla_samarreta"
                 aria-invalid={!!state?.errors?.talla_samarreta}

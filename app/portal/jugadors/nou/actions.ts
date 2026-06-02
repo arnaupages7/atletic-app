@@ -90,7 +90,6 @@ export async function inscriureJugadorAction(
     cognom2,
     data_naixement,
     genere,
-    dni,
     equip_id,
     talla_samarreta,
     adreca,
@@ -100,6 +99,20 @@ export async function inscriureJugadorAction(
   } = parsed.data
 
   const serviceSupabase = await createServiceClient()
+
+  // ── 4b. Comprovar que el DNI no estigui duplicat ─────────────
+  const dniUpper = parsed.data.dni.toUpperCase()
+  const [{ count: dniSoci }, { count: dniJugador }] = await Promise.all([
+    serviceSupabase.from('socis').select('id', { count: 'exact', head: true }).eq('dni', dniUpper),
+    serviceSupabase.from('jugadors').select('id', { count: 'exact', head: true }).eq('dni', dniUpper),
+  ])
+  if ((dniSoci ?? 0) > 0 || (dniJugador ?? 0) > 0) {
+    return {
+      errors: { dni: ['Aquest DNI/NIE ja està registrat al sistema.'] },
+      values: extractValues(formData),
+      timestamp: Date.now(),
+    }
+  }
 
   // ── 5. Crear entrada a `membres` ─────────────────────────────
   const { data: membre, error: membreError } = await serviceSupabase
@@ -152,7 +165,7 @@ export async function inscriureJugadorAction(
       num_catsalut,
       talla_samarreta,
       genere: genere || null,
-      dni,
+      dni: dniUpper,
       adreca,
       consentiment_privacitat: true,
       consentiment_comunicacions: consentiment_comunicacions === 'on',

@@ -42,7 +42,21 @@ export async function registreAction(
   const data = parsed.data
   const supabase = await createServiceClient()
 
-  // 2. Crear usuari a Supabase Auth (service role → no requereix confirmació)
+  // 2. Comprovar que el DNI no estigui duplicat
+  const dniUpper = data.dni.toUpperCase()
+  const [{ count: dniSoci }, { count: dniJugador }] = await Promise.all([
+    supabase.from('socis').select('id', { count: 'exact', head: true }).eq('dni', dniUpper),
+    supabase.from('jugadors').select('id', { count: 'exact', head: true }).eq('dni', dniUpper),
+  ])
+  if ((dniSoci ?? 0) > 0 || (dniJugador ?? 0) > 0) {
+    return {
+      errors: { dni: ['Aquest DNI/NIE ja està registrat al sistema.'] },
+      values: extractValues(formData, ['password', 'password_confirm']),
+      timestamp: Date.now(),
+    }
+  }
+
+  // 3. Crear usuari a Supabase Auth (service role → no requereix confirmació)
   const { data: authData, error: authError } =
     await supabase.auth.admin.createUser({
       email: data.email,
@@ -85,7 +99,7 @@ export async function registreAction(
   const { error: sociError } = await supabase.from('socis').insert({
     id: membre.id,
     user_id: userId,
-    dni: data.dni,
+    dni: dniUpper,
     adreca: data.adreca,
     codi_postal: data.codi_postal,
     poblacio: data.poblacio,
