@@ -12,7 +12,7 @@ import {
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { Users, Calendar, CreditCard, ChevronRight, AlertCircle, IdCard } from 'lucide-react'
-import { pagarQuotaSociAction } from './actions'
+import { PagarQuotaForm } from './_components/pagar-quota-form'
 
 export const metadata: Metadata = { title: 'Inici' }
 
@@ -107,17 +107,7 @@ export default async function PortalPage() {
                 El teu registre és complet però el pagament de la quota anual (25€) encara no
                 s&apos;ha processat. Fes clic a &quot;Paga ara&quot; per completar l&apos;alta.
               </p>
-              <form action={pagarQuotaSociAction}>
-                <button
-                  type="submit"
-                  className={cn(
-                    buttonVariants({ size: 'sm' }),
-                    'mt-1 bg-yellow-600 hover:bg-yellow-700 text-white border-0'
-                  )}
-                >
-                  Paga ara (25€/any)
-                </button>
-              </form>
+              <PagarQuotaForm />
             </div>
           </div>
         </div>

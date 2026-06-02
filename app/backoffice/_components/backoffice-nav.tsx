@@ -11,6 +11,7 @@ import {
   Calendar,
   Settings,
   Settings2,
+  Ticket,
   LogOut,
   Menu,
   X,
@@ -35,6 +36,7 @@ const navItems = [
 ]
 
 const adminItems = [
+  { href: '/backoffice/cupons', label: 'Cupons', icon: Ticket, exact: false },
   { href: '/backoffice/gestors', label: 'Gestors', icon: Settings, exact: false },
   { href: '/backoffice/configuracio', label: 'Configuració', icon: Settings2, exact: false },
 ]

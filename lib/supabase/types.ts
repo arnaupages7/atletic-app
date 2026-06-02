@@ -440,6 +440,48 @@ export interface Database {
         }
         Relationships: []
       }
+      cupons: {
+        Row: {
+          id: string
+          codi: string
+          descripcio: string | null
+          tipus: 'percentatge' | 'import_fix'
+          valor: number
+          usos_maxims: number | null
+          usos_actuals: number
+          actiu: boolean
+          stripe_coupon_id: string | null
+          data_expiracio: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          codi: string
+          descripcio?: string | null
+          tipus: 'percentatge' | 'import_fix'
+          valor: number
+          usos_maxims?: number | null
+          usos_actuals?: number
+          actiu?: boolean
+          stripe_coupon_id?: string | null
+          data_expiracio?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          codi?: string
+          descripcio?: string | null
+          tipus?: 'percentatge' | 'import_fix'
+          valor?: number
+          usos_maxims?: number | null
+          usos_actuals?: number
+          actiu?: boolean
+          stripe_coupon_id?: string | null
+          data_expiracio?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
       configuracio: {
         Row: {
           clau: string

@@ -101,12 +101,21 @@ export async function inscriureJugadorAction(
   const serviceSupabase = await createServiceClient()
 
   // ── 4b. Comprovar que el DNI no estigui duplicat ─────────────
+  // Nota: excloem el propi soci de la comprovació perquè un soci pot
+  // inscriure's ell mateix com a jugador (p.ex. primer equip).
   const dniUpper = parsed.data.dni.toUpperCase()
-  const [{ count: dniSoci }, { count: dniJugador }] = await Promise.all([
-    serviceSupabase.from('socis').select('id', { count: 'exact', head: true }).eq('dni', dniUpper),
-    serviceSupabase.from('jugadors').select('id', { count: 'exact', head: true }).eq('dni', dniUpper),
+  const [{ count: dniSociAlt }, { count: dniJugador }] = await Promise.all([
+    serviceSupabase
+      .from('socis')
+      .select('id', { count: 'exact', head: true })
+      .eq('dni', dniUpper)
+      .neq('id', soci.id),
+    serviceSupabase
+      .from('jugadors')
+      .select('id', { count: 'exact', head: true })
+      .eq('dni', dniUpper),
   ])
-  if ((dniSoci ?? 0) > 0 || (dniJugador ?? 0) > 0) {
+  if ((dniSociAlt ?? 0) > 0 || (dniJugador ?? 0) > 0) {
     return {
       errors: { dni: ['Aquest DNI/NIE ja està registrat al sistema.'] },
       values: extractValues(formData),

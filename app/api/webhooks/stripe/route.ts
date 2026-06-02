@@ -149,6 +149,23 @@ async function handleCheckoutCompleted(
       })
     }
   }
+
+  // Incrementar usos del cupó si s'ha aplicat
+  const cuoId = session.metadata?.cuo_id
+  if (cuoId) {
+    const { data: cupo } = await supabase
+      .from('cupons')
+      .select('usos_actuals')
+      .eq('id', cuoId)
+      .single()
+
+    if (cupo) {
+      await supabase
+        .from('cupons')
+        .update({ usos_actuals: cupo.usos_actuals + 1 })
+        .eq('id', cuoId)
+    }
+  }
 }
 
 async function handleSubscriptionDeleted(
