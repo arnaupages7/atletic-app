@@ -36,7 +36,7 @@ export function DateSelect({
 
   const currentYear = new Date().getFullYear()
   const yMax = maxYear ?? currentYear
-  const yMin = minYear ?? currentYear - 100
+  const yMin = minYear ?? 1900
 
   const years = Array.from({ length: yMax - yMin + 1 }, (_, i) => yMax - i)
 
