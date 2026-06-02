@@ -1,6 +1,7 @@
 'use server'
 
 import { redirect } from 'next/navigation'
+import { isRedirectError } from 'next/dist/client/components/redirect-error'
 import { createServiceClient } from '@/lib/supabase/server'
 import { stripe } from '@/lib/stripe'
 import { RegistreSchema } from './schema'
@@ -36,6 +37,19 @@ export async function registreAction(
   _prevState: RegistreState,
   formData: FormData
 ): Promise<RegistreState> {
+  try {
+    return await _registreAction(formData)
+  } catch (err: unknown) {
+    if (isRedirectError(err)) throw err
+    console.error('[registreAction] error no controlat:', err)
+    return {
+      error: 'S\'ha produït un error inesperat. Torna-ho a intentar.',
+      timestamp: Date.now(),
+    }
+  }
+}
+
+async function _registreAction(formData: FormData): Promise<RegistreState> {
   // 1. Validar dades del formulari
   const raw = Object.fromEntries(formData.entries())
   const parsed = RegistreSchema.safeParse(raw)
@@ -157,6 +171,7 @@ export async function registreAction(
     })
     checkoutUrl = session.url!
   } catch (stripeErr) {
+    console.error('[registreAction] Stripe error:', stripeErr)
     // Rollback
     await supabase.from('membres').delete().eq('id', membre.id)
     await supabase.auth.admin.deleteUser(userId)
