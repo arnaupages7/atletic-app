@@ -273,7 +273,7 @@ export default async function CarnetPage() {
   const { data: configRows } = await serviceSupabase
     .from('configuracio')
     .select('clau, valor')
-    .in('clau', ['carnet_fons_url', 'carnet_layout'])
+    .in('clau', ['carnet_fons_url', 'carnet_layout', 'temporada_activa'])
 
   const configMap: Record<string, string | null> = {}
   for (const row of configRows ?? []) configMap[row.clau] = row.valor
@@ -316,7 +316,7 @@ export default async function CarnetPage() {
     .eq('soci_responsable_id', soci.id)
     .eq('estat', 'actiu')
 
-  const temporada = temporadaActual()
+  const temporada = configMap['temporada_activa'] ?? temporadaActual()
 
   // Opcions QR comunes
   const qrOpcions = { width: 60, margin: 1, color: { dark: '#1a1a1a', light: '#ffffff' } }

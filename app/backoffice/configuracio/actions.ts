@@ -24,6 +24,35 @@ async function verificarAdmin() {
   return serviceSupabase
 }
 
+// ── Temporada activa ──────────────────────────────────────────────────────────
+
+export async function desarTemporadaAction(
+  _prevState: { error?: string; success?: boolean } | undefined,
+  formData: FormData
+): Promise<{ error?: string; success?: boolean }> {
+  try {
+    const supabase = await verificarAdmin()
+
+    const temporada = (formData.get('temporada_activa') as string | null)?.trim()
+    if (!temporada || !/^\d{4}-\d{2}$/.test(temporada)) {
+      return { error: 'Format incorrecte. Exemple: 2026-27' }
+    }
+
+    await supabase
+      .from('configuracio')
+      .upsert({ clau: 'temporada_activa', valor: temporada, actualitzat_el: new Date().toISOString() })
+
+    revalidatePath('/backoffice')
+    revalidatePath('/backoffice/configuracio')
+    revalidatePath('/portal/jugadors/nou')
+    return { success: true }
+  } catch (err: unknown) {
+    if (isRedirectError(err)) throw err
+    console.error('[desarTemporadaAction]', err)
+    return { error: 'Error desant la temporada.' }
+  }
+}
+
 // ── Layout carnet ─────────────────────────────────────────────────────────────
 
 export async function desarCarnetLayoutAction(

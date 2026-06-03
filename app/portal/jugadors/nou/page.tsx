@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { InscripcioForm } from './inscripcio-form'
 import { buttonVariants } from '@/components/ui/button'
 import { ChevronLeft, AlertCircle } from 'lucide-react'
@@ -58,6 +58,15 @@ export default async function NouJugadorPage() {
     )
   }
 
+  // Temporada activa des de la configuració
+  const serviceSupabase = await createServiceClient()
+  const { data: temporadaRow } = await serviceSupabase
+    .from('configuracio')
+    .select('valor')
+    .eq('clau', 'temporada_activa')
+    .single()
+  const temporadaActiva = temporadaRow?.valor ?? '2025-26'
+
   // Carregar equips disponibles
   const { data: equips } = await supabase
     .from('equips')
@@ -88,7 +97,7 @@ export default async function NouJugadorPage() {
         <h1 className="text-2xl font-semibold tracking-tight">Inscriure un jugador</h1>
         <p className="text-muted-foreground text-sm">
           Omple el formulari per inscriure el jugador al futbol base de l&apos;Atlètic Club
-          Banyoles — temporada 2025-26.
+          Banyoles — temporada {temporadaActiva}.
         </p>
       </div>
 

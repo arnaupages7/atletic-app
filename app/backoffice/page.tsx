@@ -17,6 +17,7 @@ export default async function BackofficePage() {
     { count: jugadorsActius },
     { count: solicitudsPendents },
     { data: pagamentsMes },
+    { data: temporadaRow },
   ] = await Promise.all([
     supabase
       .from('socis')
@@ -41,7 +42,14 @@ export default async function BackofficePage() {
         'created_at',
         new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
       ),
+    supabase
+      .from('configuracio')
+      .select('valor')
+      .eq('clau', 'temporada_activa')
+      .single(),
   ])
+
+  const temporadaActiva = (temporadaRow as { valor: string | null } | null)?.valor ?? '2025-26'
 
   const ingressosMes = (pagamentsMes ?? []).reduce((acc, p) => acc + Number(p.import), 0)
 
@@ -70,7 +78,7 @@ export default async function BackofficePage() {
     {
       label: 'Jugadors actius',
       value: jugadorsActius ?? 0,
-      sub: 'temporada 2025-26',
+      sub: `temporada ${temporadaActiva}`,
       icon: UserCheck,
       color: 'text-green-500',
     },

@@ -7,10 +7,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { Pencil, Image as ImageIcon, Mail, Users } from 'lucide-react'
+import { Pencil, Image as ImageIcon, Mail, Users, Settings } from 'lucide-react'
 import { ConfiguracioGeneralForm } from './_components/configuracio-general-form'
 import { EquipsConfigForm } from './_components/equips-config-form'
 import { CarnetBuilder } from './_components/carnet-builder'
+import { TemporadaForm } from './_components/temporada-form'
 import type { CarnetElement } from './_components/carnet-builder'
 
 export const metadata: Metadata = { title: 'Configuració' }
@@ -49,6 +50,8 @@ export default async function ConfiguracioPage() {
   for (const row of configRows ?? []) {
     config[row.clau] = row.valor
   }
+
+  const temporadaActiva = config['temporada_activa'] ?? '2025-26'
 
   // Layout carnet
   let carnetLayout: CarnetElement[] = []
@@ -95,6 +98,10 @@ export default async function ConfiguracioPage() {
           <TabsTrigger value="plantilles" className="gap-1.5">
             <Mail className="size-3.5" />
             Plantilles de correu
+          </TabsTrigger>
+          <TabsTrigger value="configuracio" className="gap-1.5">
+            <Settings className="size-3.5" />
+            General
           </TabsTrigger>
         </TabsList>
 
@@ -203,6 +210,21 @@ export default async function ConfiguracioPage() {
               </Card>
             ))
           )}
+        </TabsContent>
+        {/* ── Tab General ─────────────────────────────────────── */}
+        <TabsContent value="configuracio" className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Temporada activa</CardTitle>
+              <CardDescription>
+                Indica la temporada en curs. S&apos;assignarà automàticament a totes les noves
+                inscripcions de jugadors.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <TemporadaForm temporadaActiva={temporadaActiva} />
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

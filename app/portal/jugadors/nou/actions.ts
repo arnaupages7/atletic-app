@@ -26,7 +26,6 @@ function extractValues(formData: FormData): Record<string, string> {
 // Extensió màxima de fitxer: 5 MB
 const MAX_FILE_SIZE = 5 * 1024 * 1024
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
-const TEMPORADA_ACTUAL = '2025-26'
 
 export async function inscriureJugadorAction(
   _prevState: InscripcioState,
@@ -100,6 +99,14 @@ export async function inscriureJugadorAction(
 
   const serviceSupabase = await createServiceClient()
 
+  // ── 4a. Obtenir temporada activa de la configuració ──────────
+  const { data: temporadaRow } = await serviceSupabase
+    .from('configuracio')
+    .select('valor')
+    .eq('clau', 'temporada_activa')
+    .single()
+  const temporadaActual = temporadaRow?.valor ?? '2025-26'
+
   // ── 4b. Comprovar que el DNI no estigui duplicat ─────────────
   // Nota: excloem el propi soci de la comprovació perquè un soci pot
   // inscriure's ell mateix com a jugador (p.ex. primer equip).
@@ -169,7 +176,7 @@ export async function inscriureJugadorAction(
       id: membre.id,
       soci_responsable_id: soci.id,
       equip_id,
-      temporada: TEMPORADA_ACTUAL,
+      temporada: temporadaActual,
       foto_fitxa_url: storagePath, // ruta relativa al bucket
       num_catsalut,
       talla_samarreta,
@@ -213,7 +220,7 @@ export async function inscriureJugadorAction(
           <tr><td style="padding:6px 12px;font-weight:600">Jugador</td><td style="padding:6px 12px">${nom} ${cognom1}${cognom2 ? ' ' + cognom2 : ''}</td></tr>
           <tr style="background:#f5f5f5"><td style="padding:6px 12px;font-weight:600">Data naix.</td><td style="padding:6px 12px">${data_naixement}</td></tr>
           <tr><td style="padding:6px 12px;font-weight:600">Equip</td><td style="padding:6px 12px">${equipData?.nom ?? equip_id}</td></tr>
-          <tr style="background:#f5f5f5"><td style="padding:6px 12px;font-weight:600">Temporada</td><td style="padding:6px 12px">${TEMPORADA_ACTUAL}</td></tr>
+          <tr style="background:#f5f5f5"><td style="padding:6px 12px;font-weight:600">Temporada</td><td style="padding:6px 12px">${temporadaActual}</td></tr>
           <tr><td style="padding:6px 12px;font-weight:600">Núm. membre</td><td style="padding:6px 12px">#${membre.numero_membre}</td></tr>
           <tr style="background:#f5f5f5"><td style="padding:6px 12px;font-weight:600">Tutor</td><td style="padding:6px 12px">${membreSoci ? `${membreSoci.nom} ${membreSoci.cognom1}` : user.email}</td></tr>
         </table>
