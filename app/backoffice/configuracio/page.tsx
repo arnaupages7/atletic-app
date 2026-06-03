@@ -10,6 +10,8 @@ import { cn } from '@/lib/utils'
 import { Pencil, Image as ImageIcon, Mail, Users } from 'lucide-react'
 import { ConfiguracioGeneralForm } from './_components/configuracio-general-form'
 import { EquipsConfigForm } from './_components/equips-config-form'
+import { CarnetBuilder } from './_components/carnet-builder'
+import type { CarnetElement } from './_components/carnet-builder'
 
 export const metadata: Metadata = { title: 'Configuració' }
 
@@ -48,6 +50,16 @@ export default async function ConfiguracioPage() {
     config[row.clau] = row.valor
   }
 
+  // Layout carnet
+  let carnetLayout: CarnetElement[] = []
+  try {
+    if (config['carnet_layout']) {
+      carnetLayout = JSON.parse(config['carnet_layout']) as CarnetElement[]
+    }
+  } catch {
+    carnetLayout = []
+  }
+
   // Plantilles
   const { data: plantilles } = await serviceSupabase
     .from('email_templates')
@@ -74,7 +86,7 @@ export default async function ConfiguracioPage() {
         <TabsList>
           <TabsTrigger value="general" className="gap-1.5">
             <ImageIcon className="size-3.5" />
-            General
+            Carnet
           </TabsTrigger>
           <TabsTrigger value="equips" className="gap-1.5">
             <Users className="size-3.5" />
@@ -86,17 +98,33 @@ export default async function ConfiguracioPage() {
           </TabsTrigger>
         </TabsList>
 
-        {/* ── Tab General ─────────────────────────────── */}
-        <TabsContent value="general" className="mt-4">
+        {/* ── Tab Carnet ──────────────────────────────── */}
+        <TabsContent value="general" className="mt-4 space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Carnet digital</CardTitle>
+              <CardTitle className="text-base">Imatge de fons</CardTitle>
               <CardDescription>
-                Imatge de fons del carnet. Deixa buit per usar el gradient taronja per defecte.
+                Puja una imatge de fons per al carnet. Deixa buit per usar el gradient taronja per defecte.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <ConfiguracioGeneralForm carnetFonsUrl={config['carnet_fons_url'] ?? ''} />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Disseny del carnet</CardTitle>
+              <CardDescription>
+                Arrossega camps dinàmics i text lliure per configurar el contingut i la posició
+                de cada element al carnet de soci.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <CarnetBuilder
+                initialElements={carnetLayout}
+                fonsUrl={config['carnet_fons_url']}
+              />
             </CardContent>
           </Card>
         </TabsContent>

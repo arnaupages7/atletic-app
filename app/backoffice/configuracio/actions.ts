@@ -24,6 +24,33 @@ async function verificarAdmin() {
   return serviceSupabase
 }
 
+// ── Layout carnet ─────────────────────────────────────────────────────────────
+
+export async function desarCarnetLayoutAction(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  elements: any[]
+): Promise<{ error?: string }> {
+  try {
+    const supabase = await verificarAdmin()
+
+    await supabase
+      .from('configuracio')
+      .upsert({
+        clau: 'carnet_layout',
+        valor: JSON.stringify(elements),
+        actualitzat_el: new Date().toISOString(),
+      })
+
+    revalidatePath('/backoffice/configuracio')
+    revalidatePath('/portal/carnet')
+    return {}
+  } catch (err: unknown) {
+    if (isRedirectError(err)) throw err
+    console.error('[desarCarnetLayoutAction]', err)
+    return { error: 'Error desant el layout.' }
+  }
+}
+
 // ── Configuració general ──────────────────────────────────────────────────────
 
 export async function desarConfiguracioGeneralAction(

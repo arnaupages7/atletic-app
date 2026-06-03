@@ -8,6 +8,7 @@ import { buttonVariants } from '@/components/ui/button'
 import { ChevronLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { PrintButton } from './_components/print-button'
+import type { CarnetElement } from '@/app/backoffice/configuracio/_components/carnet-builder'
 
 export const metadata: Metadata = { title: 'El meu carnet' }
 
@@ -16,6 +17,38 @@ function temporadaActual() {
   const any = ara.getFullYear()
   const mes = ara.getMonth() + 1
   return mes >= 7 ? `${any}-${any + 1}` : `${any - 1}-${any}`
+}
+
+type CarnetData = {
+  nom: string
+  cognom1: string
+  cognom2?: string | null
+  numero_membre: number
+  data_alta?: string | null
+  estat?: string
+  temporada?: string
+}
+
+function resolveElement(el: CarnetElement, data: CarnetData): string {
+  if (el.type === 'text') return el.content ?? ''
+  const v = el.variable ?? ''
+  switch (v) {
+    case 'nom_complet':
+      return `${data.nom} ${data.cognom1}${data.cognom2 ? ` ${data.cognom2}` : ''}`
+    case 'nom': return data.nom
+    case 'cognom1': return data.cognom1
+    case 'cognom2': return data.cognom2 ?? ''
+    case 'numero_membre':
+      return `#${String(data.numero_membre).padStart(4, '0')}`
+    case 'data_alta':
+      return data.data_alta
+        ? `Soci des de: ${new Intl.DateTimeFormat('ca-ES', { month: 'long', year: 'numeric' }).format(new Date(data.data_alta))}`
+        : ''
+    case 'temporada': return data.temporada ?? temporadaActual()
+    case 'estat':
+      return data.estat === 'actiu' ? 'Actiu' : data.estat === 'pendent_pagament' ? 'Pendent' : (data.estat ?? '')
+    default: return `{{${v}}}`
+  }
 }
 
 // Estils comuns per forçar impressió de fons
@@ -35,11 +68,16 @@ interface CarnetProps {
   tipus: 'soci' | 'jugador'
   qrDataUrl?: string
   fonsUrl?: string | null
+  layout?: CarnetElement[]
+  dataAlta?: string | null
+  estat?: string
 }
 
-function Carnet({ nom, cognom1, cognom2, numeroMembre, temporada, subtitol, tipus, qrDataUrl, fonsUrl }: CarnetProps) {
+function Carnet({ nom, cognom1, cognom2, numeroMembre, temporada, subtitol, tipus, qrDataUrl, fonsUrl, layout, dataAlta, estat }: CarnetProps) {
   const nomComplet = `${nom} ${cognom1}${cognom2 ? ` ${cognom2}` : ''}`
   const etiquetaTipus = tipus === 'soci' ? 'SOCI' : 'JUGADOR FUTBOL BASE'
+  const hasCustomLayout = layout && layout.length > 0
+  const carnetData: CarnetData = { nom, cognom1, cognom2, numero_membre: numeroMembre, data_alta: dataAlta, estat, temporada }
 
   const backgroundStyle: React.CSSProperties = fonsUrl
     ? { backgroundImage: `url(${fonsUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
@@ -88,7 +126,7 @@ function Carnet({ nom, cognom1, cognom2, numeroMembre, temporada, subtitol, tipu
         display: 'flex', flexDirection: 'column',
         justifyContent: 'space-between',
       }}>
-        {/* Capçalera */}
+        {/* Capçalera (sempre visible) */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -112,77 +150,114 @@ function Carnet({ nom, cognom1, cognom2, numeroMembre, temporada, subtitol, tipu
           </span>
         </div>
 
-        {/* Nom */}
-        <div>
-          <p style={{
-            color: 'white', fontSize: '20px', fontWeight: 800,
-            lineHeight: 1.1, margin: 0, letterSpacing: '-0.3px',
-          }}>
-            {nomComplet}
-          </p>
-          {subtitol && (
-            <p style={{
-              color: 'rgba(255,255,255,0.75)', fontSize: '11px',
-              fontWeight: 500, margin: '3px 0 0 0',
-            }}>
-              {subtitol}
-            </p>
-          )}
-        </div>
-
-        {/* Peu */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-          {/* Número */}
-          <div>
-            <p style={{
-              color: 'rgba(255,255,255,0.6)', fontSize: '8px',
-              textTransform: 'uppercase', letterSpacing: '0.8px', margin: '0 0 2px 0',
-            }}>
-              Número de {tipus === 'soci' ? 'soci' : 'membre'}
-            </p>
-            <p style={{
-              color: 'white', fontSize: '22px', fontWeight: 900,
-              fontFamily: 'monospace', margin: 0, letterSpacing: '1px',
-            }}>
-              #{String(numeroMembre).padStart(4, '0')}
-            </p>
-          </div>
-
-          {/* QR (només soci) o Temporada */}
-          {qrDataUrl ? (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+        {/* Layout per defecte (si no hi ha layout personalitzat) */}
+        {!hasCustomLayout && (
+          <>
+            {/* Nom */}
+            <div>
               <p style={{
-                color: 'rgba(255,255,255,0.6)', fontSize: '8px',
-                textTransform: 'uppercase', letterSpacing: '0.8px', margin: 0,
+                color: 'white', fontSize: '20px', fontWeight: 800,
+                lineHeight: 1.1, margin: 0, letterSpacing: '-0.3px',
               }}>
-                {temporada}
+                {nomComplet}
               </p>
-              <div style={{
-                ...printColorStyle,
-                background: 'white',
-                borderRadius: '6px',
-                padding: '4px',
-                display: 'flex',
-              }}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={qrDataUrl} alt="QR" width={52} height={52} style={{ display: 'block' }} />
+              {subtitol && (
+                <p style={{
+                  color: 'rgba(255,255,255,0.75)', fontSize: '11px',
+                  fontWeight: 500, margin: '3px 0 0 0',
+                }}>
+                  {subtitol}
+                </p>
+              )}
+            </div>
+
+            {/* Peu */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+              {/* Número */}
+              <div>
+                <p style={{
+                  color: 'rgba(255,255,255,0.6)', fontSize: '8px',
+                  textTransform: 'uppercase', letterSpacing: '0.8px', margin: '0 0 2px 0',
+                }}>
+                  Número de {tipus === 'soci' ? 'soci' : 'membre'}
+                </p>
+                <p style={{
+                  color: 'white', fontSize: '22px', fontWeight: 900,
+                  fontFamily: 'monospace', margin: 0, letterSpacing: '1px',
+                }}>
+                  #{String(numeroMembre).padStart(4, '0')}
+                </p>
               </div>
+
+              {/* QR o Temporada */}
+              {qrDataUrl ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                  <p style={{
+                    color: 'rgba(255,255,255,0.6)', fontSize: '8px',
+                    textTransform: 'uppercase', letterSpacing: '0.8px', margin: 0,
+                  }}>
+                    {temporada}
+                  </p>
+                  <div style={{ ...printColorStyle, background: 'white', borderRadius: '6px', padding: '4px', display: 'flex' }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={qrDataUrl} alt="QR" width={52} height={52} style={{ display: 'block' }} />
+                  </div>
+                </div>
+              ) : (
+                <div style={{ textAlign: 'right' }}>
+                  <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '8px', textTransform: 'uppercase', letterSpacing: '0.8px', margin: '0 0 2px 0' }}>
+                    Temporada
+                  </p>
+                  <p style={{ color: 'white', fontSize: '13px', fontWeight: 700, margin: 0 }}>
+                    {temporada}
+                  </p>
+                </div>
+              )}
             </div>
-          ) : (
-            <div style={{ textAlign: 'right' }}>
-              <p style={{
-                color: 'rgba(255,255,255,0.6)', fontSize: '8px',
-                textTransform: 'uppercase', letterSpacing: '0.8px', margin: '0 0 2px 0',
-              }}>
-                Temporada
-              </p>
-              <p style={{ color: 'white', fontSize: '13px', fontWeight: 700, margin: 0 }}>
-                {temporada}
-              </p>
-            </div>
-          )}
-        </div>
+          </>
+        )}
       </div>
+
+      {/* Elements del layout personalitzat (per sobre del contingut fix) */}
+      {hasCustomLayout && layout!.map((el) => {
+        const text = resolveElement(el, carnetData)
+        if (!text) return null
+        return (
+          <div
+            key={el.id}
+            style={{
+              position: 'absolute',
+              left: `${el.x}%`,
+              top: `${el.y}%`,
+              fontSize: `${el.fontSize}px`,
+              color: el.color,
+              fontWeight: el.bold ? 800 : 400,
+              opacity: el.opacity,
+              whiteSpace: 'nowrap',
+              zIndex: 2,
+              ...printColorStyle,
+            }}
+          >
+            {text}
+          </div>
+        )
+      })}
+
+      {/* QR sempre visible si layout personalitzat */}
+      {hasCustomLayout && qrDataUrl && (
+        <div style={{
+          position: 'absolute', bottom: '10px', right: '12px', zIndex: 3,
+          display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '3px',
+        }}>
+          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '7px', textTransform: 'uppercase', letterSpacing: '0.8px', margin: 0 }}>
+            {temporada}
+          </p>
+          <div style={{ ...printColorStyle, background: 'white', borderRadius: '5px', padding: '3px', display: 'flex' }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={qrDataUrl} alt="QR" width={46} height={46} style={{ display: 'block' }} />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -194,18 +269,30 @@ export default async function CarnetPage() {
 
   const serviceSupabase = await createServiceClient()
 
-  // Fons carnet configurable
-  const { data: fonsRow } = await serviceSupabase
+  // Configuració carnet (fons + layout)
+  const { data: configRows } = await serviceSupabase
     .from('configuracio')
-    .select('valor')
-    .eq('clau', 'carnet_fons_url')
-    .single()
-  const carnetFonsUrl = fonsRow?.valor ?? null
+    .select('clau, valor')
+    .in('clau', ['carnet_fons_url', 'carnet_layout'])
+
+  const configMap: Record<string, string | null> = {}
+  for (const row of configRows ?? []) configMap[row.clau] = row.valor
+
+  const carnetFonsUrl = configMap['carnet_fons_url'] ?? null
+
+  let carnetLayout: CarnetElement[] = []
+  try {
+    if (configMap['carnet_layout']) {
+      carnetLayout = JSON.parse(configMap['carnet_layout']) as CarnetElement[]
+    }
+  } catch {
+    carnetLayout = []
+  }
 
   // Dades del soci
   const { data: soci } = await supabase
     .from('socis')
-    .select('id, estat')
+    .select('id, estat, data_alta')
     .eq('user_id', user.id)
     .single()
   if (!soci) redirect('/login')
@@ -324,6 +411,9 @@ export default async function CarnetPage() {
             tipus="soci"
             qrDataUrl={qrDataUrl}
             fonsUrl={carnetFonsUrl}
+            layout={carnetLayout}
+            dataAlta={soci.data_alta}
+            estat={soci.estat}
           />
         </div>
 
@@ -349,6 +439,7 @@ export default async function CarnetPage() {
                 tipus="jugador"
                 qrDataUrl={jugador.qrDataUrl}
                 fonsUrl={carnetFonsUrl}
+                layout={carnetLayout}
               />
             </div>
           )
