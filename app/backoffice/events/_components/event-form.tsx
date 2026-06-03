@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { ImageUpload } from '@/components/ui/image-upload'
 import { Save, Video } from 'lucide-react'
+type CheckedState = boolean | 'indeterminate'
 
 export type EventFormState = {
   error?: string
@@ -36,6 +37,8 @@ type Props = {
 export function EventForm({ action, defaults, submitLabel = 'Desar', pendingLabel = 'Desant…' }: Props) {
   const [state, formAction, pending] = useActionState<EventFormState, FormData>(action, undefined)
   const [imatgeUrl, setImatgeUrl] = useState<string | null>(defaults?.imatge_url ?? null)
+  const [publicat, setPublicat] = useState<boolean>(defaults?.publicat ?? false)
+  const [exclusiuSocis, setExclusiuSocis] = useState<boolean>(defaults?.exclusiu_socis ?? false)
 
   const toDatetimeLocal = (iso: string | null | undefined) => {
     if (!iso) return ''
@@ -151,13 +154,16 @@ export function EventForm({ action, defaults, submitLabel = 'Desar', pendingLabe
       </div>
 
       {/* Opcions */}
+      {/* Hidden inputs per garantir que els valors dels checkboxes s'envien correctament */}
+      <input type="hidden" name="exclusiu_socis" value={exclusiuSocis ? 'on' : ''} />
+      <input type="hidden" name="publicat" value={publicat ? 'on' : ''} />
       <div className="space-y-3 rounded-lg border p-4 bg-muted/30">
         <p className="text-sm font-medium">Opcions</p>
         <div className="flex items-center gap-2">
           <Checkbox
             id="exclusiu_socis"
-            name="exclusiu_socis"
-            defaultChecked={defaults?.exclusiu_socis ?? false}
+            checked={exclusiuSocis}
+            onCheckedChange={(v: CheckedState) => setExclusiuSocis(v === true)}
           />
           <Label htmlFor="exclusiu_socis" className="font-normal cursor-pointer">
             Exclusiu per a socis
@@ -166,8 +172,8 @@ export function EventForm({ action, defaults, submitLabel = 'Desar', pendingLabe
         <div className="flex items-center gap-2">
           <Checkbox
             id="publicat"
-            name="publicat"
-            defaultChecked={defaults?.publicat ?? false}
+            checked={publicat}
+            onCheckedChange={(v: CheckedState) => setPublicat(v === true)}
           />
           <Label htmlFor="publicat" className="font-normal cursor-pointer">
             Publicat (visible al portal)

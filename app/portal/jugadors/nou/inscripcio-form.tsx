@@ -156,16 +156,17 @@ export function InscripcioForm({ equips }: { equips: Equip[] }) {
                 <SelectValue placeholder="Selecciona equip…" />
               </SelectTrigger>
               <SelectContent>
-                {equips.map((e) => (
-                  <SelectItem key={e.id} value={e.id}>
-                    {e.nom}
-                    {e.places_disponibles !== null && e.places_disponibles <= 3 && (
-                      <span className="ml-2 text-xs text-orange-500">
-                        ({e.places_disponibles} places)
-                      </span>
-                    )}
-                  </SelectItem>
-                ))}
+                {equips.map((e) => {
+                  const label =
+                    e.places_disponibles !== null && e.places_disponibles <= 3
+                      ? `${e.nom} (${e.places_disponibles} places)`
+                      : e.nom
+                  return (
+                    <SelectItem key={e.id} value={e.id}>
+                      {label}
+                    </SelectItem>
+                  )
+                })}
               </SelectContent>
             </Select>
             <FieldError errors={state?.errors} field="equip_id" />

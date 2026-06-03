@@ -36,7 +36,7 @@ export default async function PortalPage() {
 
   const { data: membre } = await supabase
     .from('membres')
-    .select('nom, cognom1, numero_membre')
+    .select('nom, cognom1, cognom2, numero_membre')
     .eq('id', soci.id)
     .single()
 
@@ -87,7 +87,7 @@ export default async function PortalPage() {
       {/* Capçalera */}
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">
-          Hola, {membre?.nom}!
+          Hola, {membre?.nom} {membre?.cognom1}{membre?.cognom2 ? ` ${membre.cognom2}` : ''}!
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
           Benvingut al teu portal de soci de l&apos;Atlètic Club Banyoles.

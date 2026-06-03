@@ -1,7 +1,7 @@
 'use server'
 
 import { redirect } from 'next/navigation'
-import { Resend } from 'resend'
+import { resend } from '@/lib/resend'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { InscripcioJugadorSchema } from './schema'
 
@@ -203,9 +203,8 @@ export async function inscriureJugadorAction(
       .eq('id', soci.id)
       .single()
 
-    const resend = new Resend(process.env.RESEND_API_KEY)
     await resend.emails.send({
-      from: `Atlètic Club Banyoles <${process.env.RESEND_FROM_EMAIL ?? 'administracio@atletic.cat'}>`,
+      from: process.env.EMAIL_FROM ?? 'Atlètic Club Banyoles <no-reply@atleticbanyoles.cat>',
       to: 'administracio@atletic.cat',
       subject: `Nova inscripció de jugador — ${nom} ${cognom1}`,
       html: `

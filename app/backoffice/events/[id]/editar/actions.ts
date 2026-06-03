@@ -77,7 +77,6 @@ export async function editarEventAction(
       exclusiu_socis: parsed.data.exclusiu_socis,
       publicat: parsed.data.publicat,
       ...(novaNotificacioEnviada ? { notificacio_enviada: true } : {}),
-      updated_at: new Date().toISOString(),
     })
     .eq('id', eventId)
 

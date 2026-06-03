@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { buttonVariants } from '@/components/ui/button'
-import { Users, Clock, CheckCircle2, XCircle, AlertCircle, PlusCircle } from 'lucide-react'
+import { Users, Clock, CheckCircle2, XCircle, AlertCircle, PlusCircle, Pencil } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { EstatJugador } from '@/lib/supabase/types'
 import { PagarQuotaButton } from './_components/pagar-quota-button'
@@ -47,11 +47,12 @@ const ESTAT_CONFIG: Record<EstatJugador, { label: string; icon: React.ElementTyp
 export default async function JugadorsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ nova?: string }>
+  searchParams: Promise<{ nova?: string; editat?: string }>
 }) {
   const supabase = await createClient()
   const params = await searchParams
   const novaInscripcio = params.nova === '1'
+  const editatOk = params.editat === '1'
 
   const {
     data: { user },
@@ -133,6 +134,16 @@ export default async function JugadorsPage({
           </div>
         )}
       </div>
+
+      {/* Banner confirmació edició */}
+      {editatOk && (
+        <div className="flex items-start gap-3 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-950/30">
+          <CheckCircle2 className="size-5 text-green-600 dark:text-green-400 shrink-0 mt-0.5" />
+          <p className="text-sm font-medium text-green-800 dark:text-green-200">
+            Dades del jugador actualitzades correctament.
+          </p>
+        </div>
+      )}
 
       {/* Banner confirmació nova inscripció */}
       {novaInscripcio && (
@@ -216,6 +227,17 @@ export default async function JugadorsPage({
                         La inscripció ha estat aprovada. Completa el pagament per activar la plaça.
                       </p>
                       <PagarQuotaButton jugadorId={jugador.id} importBase={importBase} />
+                    </div>
+                  )}
+                  {['pendent_aprovacio', 'actiu'].includes(jugador.estat) && (
+                    <div className="pt-2 mt-1">
+                      <Link
+                        href={`/portal/jugadors/${jugador.id}/editar`}
+                        className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <Pencil className="size-3" />
+                        Editar dades
+                      </Link>
                     </div>
                   )}
                 </CardContent>
