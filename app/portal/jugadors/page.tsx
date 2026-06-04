@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { buttonVariants } from '@/components/ui/button'
@@ -104,9 +104,19 @@ export default async function JugadorsPage({
   const membreMap = Object.fromEntries((membreJugadors ?? []).map((m) => [m.id, m]))
   const equipMap = Object.fromEntries((equips ?? []).map((e) => [e.id, e]))
 
+  // Preu defecte des de configuració
+  const serviceSupabase = await createServiceClient()
+  const { data: preuRow } = await serviceSupabase
+    .from('configuracio')
+    .select('valor')
+    .eq('clau', 'preu_defecte_jugador')
+    .single()
+  const preuDefecte = preuRow?.valor ? parseInt(preuRow.valor, 10) : 30000
+  const DESCOMPTE_GERMA = 2500
+
   // Descompte germà: si ja hi ha algun jugador actiu, el segon en paga menys
   const teGerma = (jugadors ?? []).some((j) => j.estat === 'actiu')
-  const importBase = teGerma ? 27500 : 30000
+  const importBase = teGerma ? preuDefecte - DESCOMPTE_GERMA : preuDefecte
 
   return (
     <div className="space-y-6">

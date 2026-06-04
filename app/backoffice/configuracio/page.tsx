@@ -7,11 +7,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { Pencil, Image as ImageIcon, Mail, Users, Settings } from 'lucide-react'
+import { Pencil, Image as ImageIcon, Mail, Settings } from 'lucide-react'
 import { ConfiguracioGeneralForm } from './_components/configuracio-general-form'
-import { EquipsConfigForm } from './_components/equips-config-form'
 import { CarnetBuilder } from './_components/carnet-builder'
 import { TemporadaForm } from './_components/temporada-form'
+import { PreuDefecteForm } from './_components/preu-defecte-form'
 import type { CarnetElement } from './_components/carnet-builder'
 
 export const metadata: Metadata = { title: 'Configuració' }
@@ -52,6 +52,8 @@ export default async function ConfiguracioPage() {
   }
 
   const temporadaActiva = config['temporada_activa'] ?? '2025-26'
+  const preuDefecteCents = config['preu_defecte_jugador'] ? parseInt(config['preu_defecte_jugador'], 10) : 30000
+  const preuDefecteEuros = preuDefecteCents / 100
 
   // Layout carnet
   let carnetLayout: CarnetElement[] = []
@@ -69,13 +71,6 @@ export default async function ConfiguracioPage() {
     .select('id, nom, assumpte, updated_at')
     .order('id')
 
-  // Equips actius
-  const { data: equips } = await serviceSupabase
-    .from('equips')
-    .select('id, nom, slug, temporada, preu_inscripcio, soci_automatic')
-    .eq('actiu', true)
-    .order('nom')
-
   return (
     <div className="space-y-6">
       <div>
@@ -90,10 +85,6 @@ export default async function ConfiguracioPage() {
           <TabsTrigger value="general" className="gap-1.5">
             <ImageIcon className="size-3.5" />
             Carnet
-          </TabsTrigger>
-          <TabsTrigger value="equips" className="gap-1.5">
-            <Users className="size-3.5" />
-            Equips
           </TabsTrigger>
           <TabsTrigger value="plantilles" className="gap-1.5">
             <Mail className="size-3.5" />
@@ -132,23 +123,6 @@ export default async function ConfiguracioPage() {
                 initialElements={carnetLayout}
                 fonsUrl={config['carnet_fons_url']}
               />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* ── Tab Equips ──────────────────────────────── */}
-        <TabsContent value="equips" className="mt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Quotes i soci automàtic per equip</CardTitle>
-              <CardDescription>
-                Configura el preu d&apos;inscripció de cada equip. Si marqueu &quot;Soci
-                automàtic&quot;, els jugadors s&apos;activen directament en ser aprovats sense
-                necessitat de pagament.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <EquipsConfigForm equips={equips ?? []} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -212,7 +186,7 @@ export default async function ConfiguracioPage() {
           )}
         </TabsContent>
         {/* ── Tab General ─────────────────────────────────────── */}
-        <TabsContent value="configuracio" className="mt-4">
+        <TabsContent value="configuracio" className="mt-4 space-y-4">
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Temporada activa</CardTitle>
@@ -223,6 +197,23 @@ export default async function ConfiguracioPage() {
             </CardHeader>
             <CardContent>
               <TemporadaForm temporadaActiva={temporadaActiva} />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Preu per defecte d&apos;inscripció</CardTitle>
+              <CardDescription>
+                Preu aplicat als equips que no tenen un preu específic configurat. Gestiona els
+                preus per equip des de{' '}
+                <a href="/backoffice/equips" className="underline underline-offset-4">
+                  Equips
+                </a>
+                .
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <PreuDefecteForm preuDefecteEuros={preuDefecteEuros} />
             </CardContent>
           </Card>
         </TabsContent>

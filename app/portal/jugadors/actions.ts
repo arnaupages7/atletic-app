@@ -61,7 +61,15 @@ export async function pagarQuotaJugadorAction(
     .eq('estat', 'actiu')
 
   const teGerma = (altresActius ?? 0) > 0
-  const importBase = teGerma ? 27500 : 30000
+
+  const { data: preuRow } = await serviceSupabase
+    .from('configuracio')
+    .select('valor')
+    .eq('clau', 'preu_defecte_jugador')
+    .single()
+  const preuDefecte = preuRow?.valor ? parseInt(preuRow.valor, 10) : 30000
+  const DESCOMPTE_GERMA = 2500
+  const importBase = teGerma ? preuDefecte - DESCOMPTE_GERMA : preuDefecte
 
   const jm = jugador.membres as unknown as { nom: string; cognom1: string; numero_membre: number }
   const equip = jugador.equips as unknown as { nom: string } | null

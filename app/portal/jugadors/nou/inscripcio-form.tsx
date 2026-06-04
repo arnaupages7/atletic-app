@@ -34,7 +34,7 @@ function FieldError({
   return <p className="text-xs text-destructive mt-1">{msgs[0]}</p>
 }
 
-export function InscripcioForm({ equips }: { equips: Equip[] }) {
+export function InscripcioForm({ equips, preuDefecteEuros = 300 }: { equips: Equip[]; preuDefecteEuros?: number }) {
   const [state, action, pending] = useActionState(inscriureJugadorAction, undefined)
   const [fotoNom, setFotoNom] = useState<string | null>(null)
   const v = state?.values ?? {}
@@ -384,7 +384,7 @@ export function InscripcioForm({ equips }: { equips: Equip[] }) {
       <div className="rounded-lg border border-muted bg-muted/30 p-4 text-sm text-muted-foreground">
         Un cop enviada la sol·licitud, el club la revisarà i t&apos;avisarà per correu.
         Si és aprovada, rebràs un enllaç per pagar la quota del jugador{' '}
-        <strong className="text-foreground">(300 €/temporada)</strong>.
+        <strong className="text-foreground">({preuDefecteEuros} €/temporada)</strong>.
       </div>
 
       {/* ── Enviar ── */}

@@ -45,7 +45,7 @@ export async function crearEquipAction(
     if (!nom || !temporada) return { error: 'El nom i la temporada són obligatoris.' }
 
     const slug = slugInput || slugify(nom)
-    const preuInscripcio = preuRaw?.trim() ? parseInt(preuRaw, 10) : null
+    const preuInscripcio = preuRaw?.trim() ? Math.round(parseFloat(preuRaw) * 100) : null
     const placesDisponibles = placesRaw?.trim() ? parseInt(placesRaw, 10) : null
 
     const { error } = await supabase.from('equips').insert({
@@ -97,7 +97,7 @@ export async function editarEquipAction(
     if (!nom) return { error: 'El nom és obligatori.' }
 
     const slug = slugInput || slugify(nom)
-    const preuInscripcio = preuRaw?.trim() ? parseInt(preuRaw, 10) : null
+    const preuInscripcio = preuRaw?.trim() ? Math.round(parseFloat(preuRaw) * 100) : null
     const placesDisponibles = placesRaw?.trim() ? parseInt(placesRaw, 10) : null
 
     const { error } = await supabase

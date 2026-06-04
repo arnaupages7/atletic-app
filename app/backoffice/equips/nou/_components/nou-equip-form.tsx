@@ -82,17 +82,19 @@ export function NouEquipForm({ temporadaActiva }: { temporadaActiva: string }) {
 
         {/* Preu */}
         <div className="space-y-1.5">
-          <Label htmlFor="preu_inscripcio">
-            Preu inscripció <span className="text-muted-foreground font-normal">(en cèntims)</span>
-          </Label>
-          <Input
-            id="preu_inscripcio"
-            name="preu_inscripcio"
-            type="number"
-            min={0}
-            step={100}
-            placeholder="30000 = 300 €"
-          />
+          <Label htmlFor="preu_inscripcio">Preu inscripció</Label>
+          <div className="flex items-center gap-2">
+            <Input
+              id="preu_inscripcio"
+              name="preu_inscripcio"
+              type="number"
+              min={0}
+              step={1}
+              placeholder="300"
+              className="w-24"
+            />
+            <span className="text-sm text-muted-foreground">€</span>
+          </div>
           <p className="text-xs text-muted-foreground">Deixa buit per usar el preu per defecte.</p>
         </div>
 

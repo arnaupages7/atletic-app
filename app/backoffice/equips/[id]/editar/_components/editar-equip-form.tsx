@@ -75,18 +75,20 @@ export function EditarEquipForm({
 
         {/* Preu */}
         <div className="space-y-1.5">
-          <Label htmlFor="preu_inscripcio">
-            Preu <span className="text-muted-foreground font-normal">(cèntims)</span>
-          </Label>
-          <Input
-            id="preu_inscripcio"
-            name="preu_inscripcio"
-            type="number"
-            min={0}
-            step={100}
-            defaultValue={defaults.preu_inscripcio ?? ''}
-            placeholder="30000 = 300 €"
-          />
+          <Label htmlFor="preu_inscripcio">Preu inscripció</Label>
+          <div className="flex items-center gap-2">
+            <Input
+              id="preu_inscripcio"
+              name="preu_inscripcio"
+              type="number"
+              min={0}
+              step={1}
+              defaultValue={defaults.preu_inscripcio != null ? (defaults.preu_inscripcio / 100).toFixed(0) : ''}
+              placeholder="300"
+              className="w-24"
+            />
+            <span className="text-sm text-muted-foreground">€</span>
+          </div>
         </div>
 
         {/* Places */}

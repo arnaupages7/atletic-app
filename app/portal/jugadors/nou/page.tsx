@@ -67,6 +67,14 @@ export default async function NouJugadorPage() {
     .single()
   const temporadaActiva = temporadaRow?.valor ?? '2025-26'
 
+  // Preu per defecte
+  const { data: preuRow } = await serviceSupabase
+    .from('configuracio')
+    .select('valor')
+    .eq('clau', 'preu_defecte_jugador')
+    .single()
+  const preuDefecteEuros = preuRow?.valor ? Math.round(parseInt(preuRow.valor, 10) / 100) : 300
+
   // Carregar equips disponibles de la temporada activa
   const { data: equips } = await supabase
     .from('equips')
@@ -111,7 +119,7 @@ export default async function NouJugadorPage() {
       )}
 
       {/* Formulari */}
-      <InscripcioForm equips={equips ?? []} />
+      <InscripcioForm equips={equips ?? []} preuDefecteEuros={preuDefecteEuros} />
     </div>
   )
 }

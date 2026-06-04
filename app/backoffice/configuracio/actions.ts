@@ -143,6 +143,35 @@ export async function desarConfigEquipsAction(
   }
 }
 
+// ── Preu per defecte jugadors ─────────────────────────────────────────────────
+
+export async function desarPreuDefecteAction(
+  _prevState: { error?: string; success?: boolean } | undefined,
+  formData: FormData
+): Promise<{ error?: string; success?: boolean }> {
+  try {
+    const supabase = await verificarAdmin()
+
+    const preuRaw = (formData.get('preu_defecte') as string | null)?.trim()
+    if (!preuRaw || isNaN(Number(preuRaw)) || Number(preuRaw) < 0) {
+      return { error: 'Introdueix un preu vàlid en euros.' }
+    }
+
+    const preuCents = Math.round(parseFloat(preuRaw) * 100)
+
+    await supabase
+      .from('configuracio')
+      .upsert({ clau: 'preu_defecte_jugador', valor: String(preuCents), actualitzat_el: new Date().toISOString() })
+
+    revalidatePath('/backoffice/configuracio')
+    return { success: true }
+  } catch (err: unknown) {
+    if (isRedirectError(err)) throw err
+    console.error('[desarPreuDefecteAction]', err)
+    return { error: 'Error desant el preu.' }
+  }
+}
+
 // ── Plantilles de correu ──────────────────────────────────────────────────────
 
 export async function desarPlantillaAction(

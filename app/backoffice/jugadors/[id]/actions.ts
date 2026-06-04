@@ -95,16 +95,25 @@ export async function aprovarJugadorAction(jugadorId: string): Promise<{ error?:
 
   const teGerma = (altresActius ?? 0) > 0
 
-  // Preu: configurat per equip > descompte germà > preu per defecte
+  // Preu defecte des de configuració
+  const { data: preuRow } = await serviceSupabase
+    .from('configuracio')
+    .select('valor')
+    .eq('clau', 'preu_defecte_jugador')
+    .single()
+  const preuDefecte = preuRow?.valor ? parseInt(preuRow.valor, 10) : 30000
+  const DESCOMPTE_GERMA = 2500 // 25 €
+
+  // Preu: configurat per equip > preu per defecte (amb possible descompte germà)
   let importCents: number
   if (equip?.preu_inscripcio != null) {
     importCents = equip.preu_inscripcio
   } else {
-    importCents = teGerma ? 27500 : 30000 // 275€ o 300€
+    importCents = teGerma ? preuDefecte - DESCOMPTE_GERMA : preuDefecte
   }
 
   const importText = teGerma && equip?.preu_inscripcio == null
-    ? `275 € (descompte germà aplicat)`
+    ? `${((preuDefecte - DESCOMPTE_GERMA) / 100).toFixed(0)} € (descompte germà aplicat)`
     : `${(importCents / 100).toFixed(0)} €`
 
   // Actualitzar estat jugador a 'aprovada'
