@@ -67,11 +67,12 @@ export default async function NouJugadorPage() {
     .single()
   const temporadaActiva = temporadaRow?.valor ?? '2025-26'
 
-  // Carregar equips disponibles
+  // Carregar equips disponibles de la temporada activa
   const { data: equips } = await supabase
     .from('equips')
     .select('id, nom, places_disponibles')
     .eq('actiu', true)
+    .eq('temporada', temporadaActiva)
     .order('nom', { ascending: true })
 
   // Comptar jugadors actius del soci (per detectar descompte germà)

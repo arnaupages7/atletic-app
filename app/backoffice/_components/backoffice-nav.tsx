@@ -16,6 +16,7 @@ import {
   Menu,
   X,
   Shield,
+  ShieldCheck,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { buttonVariants } from '@/components/ui/button'
@@ -36,6 +37,7 @@ const navItems = [
 ]
 
 const adminItems = [
+  { href: '/backoffice/equips', label: 'Equips', icon: ShieldCheck, exact: false },
   { href: '/backoffice/cupons', label: 'Cupons', icon: Ticket, exact: false },
   { href: '/backoffice/gestors', label: 'Gestors', icon: Settings, exact: false },
   { href: '/backoffice/configuracio', label: 'Configuració', icon: Settings2, exact: false },
