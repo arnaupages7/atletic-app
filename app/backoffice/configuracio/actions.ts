@@ -172,6 +172,42 @@ export async function desarPreuDefecteAction(
   }
 }
 
+// ── Descompte germà ───────────────────────────────────────────────────────────
+
+export async function desarDescompteGermaAction(
+  _prevState: { error?: string; success?: boolean } | undefined,
+  formData: FormData
+): Promise<{ error?: string; success?: boolean }> {
+  try {
+    const supabase = await verificarAdmin()
+
+    const tipus = (formData.get('descompte_germa_tipus') as string | null)?.trim()
+    const valorRaw = (formData.get('descompte_germa_valor') as string | null)?.trim()
+
+    if (!tipus || !['import_fix', 'percentatge'].includes(tipus)) {
+      return { error: 'Tipus de descompte no vàlid.' }
+    }
+    if (!valorRaw || isNaN(Number(valorRaw)) || Number(valorRaw) < 0) {
+      return { error: 'Introdueix un valor vàlid.' }
+    }
+    if (tipus === 'percentatge' && parseFloat(valorRaw) > 100) {
+      return { error: 'El percentatge no pot superar el 100%.' }
+    }
+
+    await supabase.from('configuracio').upsert([
+      { clau: 'descompte_germa_tipus', valor: tipus, actualitzat_el: new Date().toISOString() },
+      { clau: 'descompte_germa_valor', valor: valorRaw, actualitzat_el: new Date().toISOString() },
+    ])
+
+    revalidatePath('/backoffice/configuracio')
+    return { success: true }
+  } catch (err: unknown) {
+    if (isRedirectError(err)) throw err
+    console.error('[desarDescompteGermaAction]', err)
+    return { error: 'Error desant el descompte.' }
+  }
+}
+
 // ── Plantilles de correu ──────────────────────────────────────────────────────
 
 export async function desarPlantillaAction(

@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { stripe } from '@/lib/stripe'
 import { importAmbKlarna } from '@/lib/klarna'
+import { aplicarDescompteGerma } from '@/lib/descompte-germa'
 
 export async function pagarQuotaJugadorAction(
   jugadorId: string,
@@ -62,14 +63,17 @@ export async function pagarQuotaJugadorAction(
 
   const teGerma = (altresActius ?? 0) > 0
 
-  const { data: preuRow } = await serviceSupabase
+  const { data: configRows } = await serviceSupabase
     .from('configuracio')
-    .select('valor')
-    .eq('clau', 'preu_defecte_jugador')
-    .single()
-  const preuDefecte = preuRow?.valor ? parseInt(preuRow.valor, 10) : 30000
-  const DESCOMPTE_GERMA = 2500
-  const importBase = teGerma ? preuDefecte - DESCOMPTE_GERMA : preuDefecte
+    .select('clau, valor')
+    .in('clau', ['preu_defecte_jugador', 'descompte_germa_tipus', 'descompte_germa_valor'])
+  const cfg: Record<string, string | null> = {}
+  for (const r of configRows ?? []) cfg[r.clau] = r.valor
+
+  const preuDefecte = cfg['preu_defecte_jugador'] ? parseInt(cfg['preu_defecte_jugador'], 10) : 30000
+  const importBase = teGerma
+    ? aplicarDescompteGerma(preuDefecte, cfg['descompte_germa_tipus'], cfg['descompte_germa_valor'])
+    : preuDefecte
 
   const jm = jugador.membres as unknown as { nom: string; cognom1: string; numero_membre: number }
   const equip = jugador.equips as unknown as { nom: string } | null

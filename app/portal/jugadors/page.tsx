@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
+import { aplicarDescompteGerma } from '@/lib/descompte-germa'
 import { redirect } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { buttonVariants } from '@/components/ui/button'
@@ -104,19 +105,22 @@ export default async function JugadorsPage({
   const membreMap = Object.fromEntries((membreJugadors ?? []).map((m) => [m.id, m]))
   const equipMap = Object.fromEntries((equips ?? []).map((e) => [e.id, e]))
 
-  // Preu defecte des de configuració
+  // Configuració de preus i descompte germà
   const serviceSupabase = await createServiceClient()
-  const { data: preuRow } = await serviceSupabase
+  const { data: configRows } = await serviceSupabase
     .from('configuracio')
-    .select('valor')
-    .eq('clau', 'preu_defecte_jugador')
-    .single()
-  const preuDefecte = preuRow?.valor ? parseInt(preuRow.valor, 10) : 30000
-  const DESCOMPTE_GERMA = 2500
+    .select('clau, valor')
+    .in('clau', ['preu_defecte_jugador', 'descompte_germa_tipus', 'descompte_germa_valor'])
+  const cfg: Record<string, string | null> = {}
+  for (const r of configRows ?? []) cfg[r.clau] = r.valor
+
+  const preuDefecte = cfg['preu_defecte_jugador'] ? parseInt(cfg['preu_defecte_jugador'], 10) : 30000
 
   // Descompte germà: si ja hi ha algun jugador actiu, el segon en paga menys
   const teGerma = (jugadors ?? []).some((j) => j.estat === 'actiu')
-  const importBase = teGerma ? preuDefecte - DESCOMPTE_GERMA : preuDefecte
+  const importBase = teGerma
+    ? aplicarDescompteGerma(preuDefecte, cfg['descompte_germa_tipus'], cfg['descompte_germa_valor'])
+    : preuDefecte
 
   return (
     <div className="space-y-6">

@@ -12,6 +12,7 @@ import { ConfiguracioGeneralForm } from './_components/configuracio-general-form
 import { CarnetBuilder } from './_components/carnet-builder'
 import { TemporadaForm } from './_components/temporada-form'
 import { PreuDefecteForm } from './_components/preu-defecte-form'
+import { DescompteGermaForm } from './_components/descompte-germa-form'
 import type { CarnetElement } from './_components/carnet-builder'
 
 export const metadata: Metadata = { title: 'Configuració' }
@@ -54,6 +55,9 @@ export default async function ConfiguracioPage() {
   const temporadaActiva = config['temporada_activa'] ?? '2025-26'
   const preuDefecteCents = config['preu_defecte_jugador'] ? parseInt(config['preu_defecte_jugador'], 10) : 30000
   const preuDefecteEuros = preuDefecteCents / 100
+
+  const descompteTipus = (config['descompte_germa_tipus'] ?? 'import_fix') as 'import_fix' | 'percentatge'
+  const descompteValor = config['descompte_germa_valor'] ? parseFloat(config['descompte_germa_valor']) : 25
 
   // Layout carnet
   let carnetLayout: CarnetElement[] = []
@@ -197,6 +201,19 @@ export default async function ConfiguracioPage() {
             </CardHeader>
             <CardContent>
               <TemporadaForm temporadaActiva={temporadaActiva} />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Descompte de germà/na</CardTitle>
+              <CardDescription>
+                Descompte aplicat als jugadors d&apos;un soci que ja té un altre jugador actiu.
+                Pot ser un import fix en euros o un percentatge sobre el preu final.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <DescompteGermaForm tipusActual={descompteTipus} valorActual={descompteValor} />
             </CardContent>
           </Card>
 

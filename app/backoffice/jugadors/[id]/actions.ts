@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { stripe } from '@/lib/stripe'
 import { enviarEmail } from '@/lib/email'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
+import { aplicarDescompteGerma, formatDescompteGerma } from '@/lib/descompte-germa'
 
 // ── Aprovar jugador ──────────────────────────────────────────
 export async function aprovarJugadorAction(jugadorId: string): Promise<{ error?: string }> {
@@ -95,25 +96,29 @@ export async function aprovarJugadorAction(jugadorId: string): Promise<{ error?:
 
   const teGerma = (altresActius ?? 0) > 0
 
-  // Preu defecte des de configuració
-  const { data: preuRow } = await serviceSupabase
+  // Configuració de preus i descompte germà
+  const { data: configRows } = await serviceSupabase
     .from('configuracio')
-    .select('valor')
-    .eq('clau', 'preu_defecte_jugador')
-    .single()
-  const preuDefecte = preuRow?.valor ? parseInt(preuRow.valor, 10) : 30000
-  const DESCOMPTE_GERMA = 2500 // 25 €
+    .select('clau, valor')
+    .in('clau', ['preu_defecte_jugador', 'descompte_germa_tipus', 'descompte_germa_valor'])
+  const cfg: Record<string, string | null> = {}
+  for (const r of configRows ?? []) cfg[r.clau] = r.valor
+
+  const preuDefecte = cfg['preu_defecte_jugador'] ? parseInt(cfg['preu_defecte_jugador'], 10) : 30000
 
   // Preu: configurat per equip > preu per defecte (amb possible descompte germà)
   let importCents: number
   if (equip?.preu_inscripcio != null) {
     importCents = equip.preu_inscripcio
+  } else if (teGerma) {
+    importCents = aplicarDescompteGerma(preuDefecte, cfg['descompte_germa_tipus'], cfg['descompte_germa_valor'])
   } else {
-    importCents = teGerma ? preuDefecte - DESCOMPTE_GERMA : preuDefecte
+    importCents = preuDefecte
   }
 
+  const descText = formatDescompteGerma(cfg['descompte_germa_tipus'], cfg['descompte_germa_valor'])
   const importText = teGerma && equip?.preu_inscripcio == null
-    ? `${((preuDefecte - DESCOMPTE_GERMA) / 100).toFixed(0)} € (descompte germà aplicat)`
+    ? `${(importCents / 100).toFixed(0)} € (descompte germà −${descText} aplicat)`
     : `${(importCents / 100).toFixed(0)} €`
 
   // Actualitzar estat jugador a 'aprovada'
