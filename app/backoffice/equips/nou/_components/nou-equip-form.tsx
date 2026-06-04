@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Loader2 } from 'lucide-react'
-import { crearEquipAction, slugify } from '../../actions'
+import { crearEquipAction } from '../../actions'
+import { slugify } from '../../utils'
 
 function FieldError({ msg }: { msg?: string }) {
   if (!msg) return null

@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { isRedirectError } from 'next/dist/client/components/redirect-error'
 import { revalidatePath } from 'next/cache'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
+import { slugify } from './utils'
 
 async function verificarAdmin() {
   const supabase = await createClient()
@@ -20,15 +21,6 @@ async function verificarAdmin() {
     .single()
   if (!gestor || gestor.rol !== 'admin') redirect('/backoffice')
   return serviceSupabase
-}
-
-export function slugify(str: string): string {
-  return str
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
 }
 
 export type EquipFormState = { error?: string; success?: boolean } | undefined
