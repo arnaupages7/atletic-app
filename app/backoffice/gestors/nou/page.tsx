@@ -78,8 +78,8 @@ export default function NouGestorPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="gestor">Gestor — accés estàndard al backoffice</SelectItem>
-                  <SelectItem value="admin">Admin — accés total + gestió de gestors</SelectItem>
+                  <SelectItem value="gestor" label="Gestor">Gestor — accés estàndard al backoffice</SelectItem>
+                  <SelectItem value="admin" label="Admin">Admin — accés total + gestió de gestors</SelectItem>
                 </SelectContent>
               </Select>
               <FieldError errors={state?.errors} field="rol" />

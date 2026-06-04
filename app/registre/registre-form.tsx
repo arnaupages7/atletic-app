@@ -199,7 +199,7 @@ export function RegistreForm() {
                 </SelectTrigger>
                 <SelectContent>
                   {GENERES.map((g) => (
-                    <SelectItem key={g.value} value={g.value}>
+                    <SelectItem key={g.value} value={g.value} label={g.label}>
                       {g.label}
                     </SelectItem>
                   ))}
@@ -325,9 +325,9 @@ export function RegistreForm() {
                         <SelectValue placeholder="Selecciona…" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="pare_mare">Pare / Mare</SelectItem>
-                        <SelectItem value="tutor_legal">Tutor/a legal</SelectItem>
-                        <SelectItem value="altre">Altre representant legal</SelectItem>
+                        <SelectItem value="pare_mare" label="Pare / Mare">Pare / Mare</SelectItem>
+                        <SelectItem value="tutor_legal" label="Tutor/a legal">Tutor/a legal</SelectItem>
+                        <SelectItem value="altre" label="Altre representant legal">Altre representant legal</SelectItem>
                       </SelectContent>
                     </Select>
                   </Field>

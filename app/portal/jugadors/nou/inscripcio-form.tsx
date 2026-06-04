@@ -133,9 +133,9 @@ export function InscripcioForm({ equips }: { equips: Equip[] }) {
                 <SelectValue placeholder="Selecciona…" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="M">Masculí</SelectItem>
-                <SelectItem value="F">Femení</SelectItem>
-                <SelectItem value="A">Altre / no especificat</SelectItem>
+                <SelectItem value="M" label="Masculí">Masculí</SelectItem>
+                <SelectItem value="F" label="Femení">Femení</SelectItem>
+                <SelectItem value="A" label="Altre / no especificat">Altre / no especificat</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -162,7 +162,7 @@ export function InscripcioForm({ equips }: { equips: Equip[] }) {
                       ? `${e.nom} (${e.places_disponibles} places)`
                       : e.nom
                   return (
-                    <SelectItem key={e.id} value={e.id}>
+                    <SelectItem key={e.id} value={e.id} label={label}>
                       {label}
                     </SelectItem>
                   )
