@@ -187,8 +187,8 @@ export async function desarDescompteGermaAction(
     if (!tipus || !['import_fix', 'percentatge'].includes(tipus)) {
       return { error: 'Tipus de descompte no vàlid.' }
     }
-    if (!valorRaw || isNaN(Number(valorRaw)) || Number(valorRaw) < 0) {
-      return { error: 'Introdueix un valor vàlid.' }
+    if (valorRaw === '' || valorRaw === undefined || isNaN(Number(valorRaw)) || Number(valorRaw) < 0) {
+      return { error: 'Introdueix un valor vàlid (0 per desactivar).' }
     }
     if (tipus === 'percentatge' && parseFloat(valorRaw) > 100) {
       return { error: 'El percentatge no pot superar el 100%.' }

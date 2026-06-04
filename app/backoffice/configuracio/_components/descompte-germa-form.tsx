@@ -22,58 +22,92 @@ export function DescompteGermaForm({
   valorActual: number
 }) {
   const [state, action, pending] = useActionState(desarDescompteGermaAction, undefined)
+  // Si valorActual és 0, el descompte estava desactivat
+  const [actiu, setActiu] = useState(valorActual > 0)
   const [tipus, setTipus] = useState<'import_fix' | 'percentatge'>(tipusActual)
 
   return (
-    <form action={action} className="space-y-4 max-w-xs">
-      <div className="space-y-2">
-        <Label htmlFor="descompte_germa_tipus">Tipus de descompte</Label>
-        <Select
-          name="descompte_germa_tipus"
-          value={tipus}
-          onValueChange={(v) => setTipus(v as 'import_fix' | 'percentatge')}
-        >
-          <SelectTrigger id="descompte_germa_tipus">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="import_fix" label="Import fix (€)">Import fix (€)</SelectItem>
-            <SelectItem value="percentatge" label="Percentatge (%)">Percentatge (%)</SelectItem>
-          </SelectContent>
-        </Select>
+    <form action={action} className="space-y-4 max-w-sm">
+      {/* Toggle principal */}
+      <div className="flex items-center gap-2.5">
+        <input
+          type="checkbox"
+          id="descompte_actiu"
+          checked={actiu}
+          onChange={(e) => setActiu(e.target.checked)}
+          className="size-4 rounded border-input"
+        />
+        <Label htmlFor="descompte_actiu" className="cursor-pointer font-medium">
+          Aplicar descompte per germà/na
+        </Label>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="descompte_germa_valor">
-          {tipus === 'import_fix' ? 'Import del descompte' : 'Percentatge del descompte'}
-        </Label>
-        <div className="flex items-center gap-2">
-          <Input
-            id="descompte_germa_valor"
-            name="descompte_germa_valor"
-            type="number"
-            min={0}
-            step={tipus === 'import_fix' ? 1 : 0.5}
-            max={tipus === 'percentatge' ? 100 : undefined}
-            defaultValue={valorActual}
-            className="font-mono w-24"
-          />
-          <span className="text-sm text-muted-foreground">
-            {tipus === 'import_fix' ? '€' : '%'}
-          </span>
+      {/* Configuració visible només si actiu */}
+      {actiu ? (
+        <div className="space-y-3 pl-6 border-l-2 border-border">
+          {/* Tipus */}
+          <div className="space-y-1.5">
+            <Label htmlFor="descompte_germa_tipus">Tipus</Label>
+            <Select
+              name="descompte_germa_tipus"
+              value={tipus}
+              onValueChange={(v) => setTipus(v as 'import_fix' | 'percentatge')}
+            >
+              <SelectTrigger id="descompte_germa_tipus" className="w-44">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="import_fix" label="Import fix (€)">
+                  Import fix (€)
+                </SelectItem>
+                <SelectItem value="percentatge" label="Percentatge (%)">
+                  Percentatge (%)
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Valor */}
+          <div className="space-y-1.5">
+            <Label htmlFor="descompte_germa_valor">
+              {tipus === 'import_fix' ? 'Import del descompte' : 'Percentatge del descompte'}
+            </Label>
+            <div className="flex items-center gap-2">
+              <Input
+                id="descompte_germa_valor"
+                name="descompte_germa_valor"
+                type="number"
+                min={0.01}
+                step={tipus === 'import_fix' ? 1 : 0.5}
+                max={tipus === 'percentatge' ? 100 : undefined}
+                defaultValue={valorActual > 0 ? valorActual : tipus === 'import_fix' ? 25 : 10}
+                className="font-mono w-24"
+              />
+              <span className="text-sm text-muted-foreground">
+                {tipus === 'import_fix' ? '€' : '%'}
+              </span>
+            </div>
+          </div>
+
+          <p className="text-xs text-muted-foreground">
+            S&apos;aplica automàticament si el soci ja té un altre jugador actiu al club.
+          </p>
         </div>
-        <p className="text-xs text-muted-foreground">
-          {tipus === 'import_fix'
-            ? 'Descompte en euros sobre el preu final del jugador.'
-            : 'Descompte percentual sobre el preu final del jugador.'}
-          {' '}S&apos;aplica automàticament si el soci ja té un altre jugador actiu.
-        </p>
-      </div>
+      ) : (
+        /* Hidden: guardar valor 0 per indicar desactivat */
+        <>
+          <input type="hidden" name="descompte_germa_tipus" value={tipus} />
+          <input type="hidden" name="descompte_germa_valor" value="0" />
+          <p className="text-xs text-muted-foreground pl-6">
+            No s&apos;aplicarà cap descompte per germà/na.
+          </p>
+        </>
+      )}
 
       {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
       {state?.success && (
         <p className="text-sm text-green-600 flex items-center gap-1.5">
-          <CheckCircle2 className="size-4" /> Descompte desat correctament.
+          <CheckCircle2 className="size-4" /> Desat correctament.
         </p>
       )}
 
