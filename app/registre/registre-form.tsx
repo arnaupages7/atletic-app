@@ -76,8 +76,16 @@ export function RegistreForm() {
   const [dataNaixement, setDataNaixement] = useState(v.data_naixement ?? '')
   const esMenor = dataNaixement ? calcularEdat(dataNaixement) < 18 : false
 
-  // Select controlat per al rol del tutor
+  const [genere, setGenere] = useState(v.genere ?? '')
+  const [talla, setTalla] = useState(v.talla_samarreta ?? '')
   const [tutorRelacio, setTutorRelacio] = useState(v.tutor_relacio ?? '')
+
+  const GENERE_LABELS: Record<string, string> = {
+    home: 'Home', dona: 'Dona', no_binari: 'No binari', ns_nc: 'Prefereixo no dir-ho',
+  }
+  const TUTOR_LABELS: Record<string, string> = {
+    pare_mare: 'Pare / Mare', tutor_legal: 'Tutor/a legal', altre: 'Altre representant legal',
+  }
 
   return (
     <div className="w-full max-w-lg mx-auto px-4 py-8">
@@ -193,29 +201,25 @@ export function RegistreForm() {
               />
             </Field>
             <Field label="Gènere" id="genere" errors={errors}>
-              <Select name="genere" defaultValue={v.genere}>
+              <Select name="genere" value={genere} onValueChange={(v) => setGenere(v ?? '')}>
                 <SelectTrigger id="genere">
-                  <SelectValue placeholder="Selecciona…" />
+                  <SelectValue placeholder="Selecciona…">{GENERE_LABELS[genere]}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {GENERES.map((g) => (
-                    <SelectItem key={g.value} value={g.value} label={g.label}>
-                      {g.label}
-                    </SelectItem>
+                    <SelectItem key={g.value} value={g.value}>{g.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </Field>
             <Field label="Talla samarreta" id="talla_samarreta" errors={errors}>
-              <Select name="talla_samarreta" defaultValue={v.talla_samarreta}>
+              <Select name="talla_samarreta" value={talla} onValueChange={(v) => setTalla(v ?? '')}>
                 <SelectTrigger id="talla_samarreta">
-                  <SelectValue placeholder="Selecciona…" />
+                  <SelectValue placeholder="Selecciona…">{talla || undefined}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {TALLES.map((t) => (
-                    <SelectItem key={t} value={t}>
-                      {t}
-                    </SelectItem>
+                    <SelectItem key={t} value={t}>{t}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -322,12 +326,12 @@ export function RegistreForm() {
                       onValueChange={(val) => setTutorRelacio(val ?? '')}
                     >
                       <SelectTrigger id="tutor_relacio" aria-invalid={!!errors?.tutor_relacio}>
-                        <SelectValue placeholder="Selecciona…" />
+                        <SelectValue placeholder="Selecciona…">{TUTOR_LABELS[tutorRelacio]}</SelectValue>
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="pare_mare" label="Pare / Mare">Pare / Mare</SelectItem>
-                        <SelectItem value="tutor_legal" label="Tutor/a legal">Tutor/a legal</SelectItem>
-                        <SelectItem value="altre" label="Altre representant legal">Altre representant legal</SelectItem>
+                        <SelectItem value="pare_mare">Pare / Mare</SelectItem>
+                        <SelectItem value="tutor_legal">Tutor/a legal</SelectItem>
+                        <SelectItem value="altre">Altre representant legal</SelectItem>
                       </SelectContent>
                     </Select>
                   </Field>

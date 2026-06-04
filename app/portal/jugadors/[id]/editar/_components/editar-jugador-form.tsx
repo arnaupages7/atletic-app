@@ -51,6 +51,7 @@ export function EditarJugadorForm({
 
   const [talla, setTalla] = useState(defaults.talla_samarreta)
   const [genere, setGenere] = useState(defaults.genere ?? '')
+  const GENERE_LABELS: Record<string, string> = { M: 'Masculí', F: 'Femení', A: 'Altre / no especificat' }
   const [comunicacions, setComunicacions] = useState(defaults.consentiment_comunicacions)
 
   return (
@@ -112,12 +113,12 @@ export function EditarJugadorForm({
             <Label htmlFor="genere">Gènere</Label>
             <Select name="genere" value={genere} onValueChange={(v) => setGenere(v ?? '')}>
               <SelectTrigger id="genere">
-                <SelectValue placeholder="Selecciona…" />
+                <SelectValue placeholder="Selecciona…">{GENERE_LABELS[genere]}</SelectValue>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="M" label="Masculí">Masculí</SelectItem>
-                <SelectItem value="F" label="Femení">Femení</SelectItem>
-                <SelectItem value="A" label="Altre / no especificat">Altre / no especificat</SelectItem>
+                <SelectItem value="M">Masculí</SelectItem>
+                <SelectItem value="F">Femení</SelectItem>
+                <SelectItem value="A">Altre / no especificat</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -133,7 +134,7 @@ export function EditarJugadorForm({
           <Label htmlFor="talla_samarreta">Talla de samarreta</Label>
           <Select name="talla_samarreta" value={talla} onValueChange={(v) => setTalla(v as typeof talla)}>
             <SelectTrigger id="talla_samarreta" aria-invalid={!!state?.errors?.talla_samarreta}>
-              <SelectValue placeholder="Selecciona talla…" />
+              <SelectValue placeholder="Selecciona talla…">{talla || undefined}</SelectValue>
             </SelectTrigger>
             <SelectContent>
               {TALLES.map((t) => (

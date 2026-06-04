@@ -39,10 +39,19 @@ export function InscripcioForm({ equips, preuDefecteEuros = 300 }: { equips: Equ
   const [fotoNom, setFotoNom] = useState<string | null>(null)
   const v = state?.values ?? {}
 
-  // Selects controlats per evitar que Radix mostri el UUID en lloc del nom
+  // Selects controlats
+  const getEquipLabel = (id: string) => {
+    const e = equips.find((eq) => eq.id === id)
+    if (!e) return ''
+    return e.places_disponibles !== null && e.places_disponibles <= 3
+      ? `${e.nom} (${e.places_disponibles} places)` : e.nom
+  }
   const [equipId, setEquipId] = useState(v.equip_id ?? '')
+  const [equipLabel, setEquipLabel] = useState(() => v.equip_id ? getEquipLabel(v.equip_id) : '')
   const [talla, setTalla] = useState(v.talla_samarreta ?? '')
   const [genere, setGenere] = useState(v.genere ?? '')
+
+  const GENERE_LABELS: Record<string, string> = { M: 'Masculí', F: 'Femení', A: 'Altre / no especificat' }
 
   return (
     // key força remuntatge quan hi ha un nou error → defaultValue i defaultChecked s'apliquen
@@ -130,7 +139,7 @@ export function InscripcioForm({ equips, preuDefecteEuros = 300 }: { equips: Equ
             <Label htmlFor="genere">Gènere</Label>
             <Select name="genere" value={genere} onValueChange={(v) => setGenere(v ?? '')}>
               <SelectTrigger id="genere">
-                <SelectValue placeholder="Selecciona…" />
+                <SelectValue placeholder="Selecciona…">{GENERE_LABELS[genere]}</SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="M" label="Masculí">Masculí</SelectItem>
@@ -151,9 +160,9 @@ export function InscripcioForm({ equips, preuDefecteEuros = 300 }: { equips: Equ
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5 sm:col-span-2">
             <Label htmlFor="equip_id">Equip</Label>
-            <Select name="equip_id" value={equipId} onValueChange={(v) => setEquipId(v ?? '')} required>
+            <Select name="equip_id" value={equipId} onValueChange={(v) => { setEquipId(v ?? ''); setEquipLabel(getEquipLabel(v ?? '')) }} required>
               <SelectTrigger id="equip_id" aria-invalid={!!state?.errors?.equip_id}>
-                <SelectValue placeholder="Selecciona equip…" />
+                <SelectValue placeholder="Selecciona equip…">{equipLabel}</SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {equips.map((e) => {
@@ -179,7 +188,7 @@ export function InscripcioForm({ equips, preuDefecteEuros = 300 }: { equips: Equ
                 id="talla_samarreta"
                 aria-invalid={!!state?.errors?.talla_samarreta}
               >
-                <SelectValue placeholder="Selecciona talla…" />
+                <SelectValue placeholder="Selecciona talla…">{talla || undefined}</SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {TALLES.map((t) => (

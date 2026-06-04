@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 import Link from 'next/link'
 import { crearGestorAction } from './actions'
 import { Button } from '@/components/ui/button'
@@ -24,8 +24,11 @@ function FieldError({ errors, field }: { errors?: Record<string, string[]>; fiel
   return <p className="text-xs text-destructive mt-1">{msgs[0]}</p>
 }
 
+const ROL_LABELS: Record<string, string> = { gestor: 'Gestor', admin: 'Admin' }
+
 export default function NouGestorPage() {
   const [state, action, pending] = useActionState(crearGestorAction, undefined)
+  const [rol, setRol] = useState('gestor')
 
   return (
     <div className="max-w-lg space-y-6">
@@ -73,13 +76,13 @@ export default function NouGestorPage() {
 
             <div className="space-y-1.5">
               <Label htmlFor="rol">Rol <span className="text-destructive">*</span></Label>
-              <Select name="rol" defaultValue="gestor">
+              <Select name="rol" value={rol} onValueChange={(v) => setRol(v ?? 'gestor')}>
                 <SelectTrigger id="rol">
-                  <SelectValue />
+                  <SelectValue>{ROL_LABELS[rol]}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="gestor" label="Gestor">Gestor — accés estàndard al backoffice</SelectItem>
-                  <SelectItem value="admin" label="Admin">Admin — accés total + gestió de gestors</SelectItem>
+                  <SelectItem value="gestor">Gestor — accés estàndard al backoffice</SelectItem>
+                  <SelectItem value="admin">Admin — accés total + gestió de gestors</SelectItem>
                 </SelectContent>
               </Select>
               <FieldError errors={state?.errors} field="rol" />

@@ -5,13 +5,7 @@ import { CheckCircle2, Loader2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { cn } from '@/lib/utils'
 import { desarDescompteGermaAction } from '../actions'
 
 export function DescompteGermaForm({
@@ -22,7 +16,6 @@ export function DescompteGermaForm({
   valorActual: number
 }) {
   const [state, action, pending] = useActionState(desarDescompteGermaAction, undefined)
-  // Si valorActual és 0, el descompte estava desactivat
   const [actiu, setActiu] = useState(valorActual > 0)
   const [tipus, setTipus] = useState<'import_fix' | 'percentatge'>(tipusActual)
 
@@ -42,29 +35,38 @@ export function DescompteGermaForm({
         </Label>
       </div>
 
-      {/* Configuració visible només si actiu */}
       {actiu ? (
         <div className="space-y-3 pl-6 border-l-2 border-border">
-          {/* Tipus */}
+          {/* Tipus — botons toggle (2 opcions, millor que Select) */}
+          <input type="hidden" name="descompte_germa_tipus" value={tipus} />
           <div className="space-y-1.5">
-            <Label htmlFor="descompte_germa_tipus">Tipus</Label>
-            <Select
-              name="descompte_germa_tipus"
-              value={tipus}
-              onValueChange={(v) => setTipus(v as 'import_fix' | 'percentatge')}
-            >
-              <SelectTrigger id="descompte_germa_tipus" className="w-44">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="import_fix" label="Import fix (€)">
-                  Import fix (€)
-                </SelectItem>
-                <SelectItem value="percentatge" label="Percentatge (%)">
-                  Percentatge (%)
-                </SelectItem>
-              </SelectContent>
-            </Select>
+            <Label>Tipus</Label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setTipus('import_fix')}
+                className={cn(
+                  'px-3 py-1.5 rounded-md text-sm border transition-colors',
+                  tipus === 'import_fix'
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-background border-border hover:bg-muted'
+                )}
+              >
+                Import fix (€)
+              </button>
+              <button
+                type="button"
+                onClick={() => setTipus('percentatge')}
+                className={cn(
+                  'px-3 py-1.5 rounded-md text-sm border transition-colors',
+                  tipus === 'percentatge'
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-background border-border hover:bg-muted'
+                )}
+              >
+                Percentatge (%)
+              </button>
+            </div>
           </div>
 
           {/* Valor */}
@@ -94,7 +96,6 @@ export function DescompteGermaForm({
           </p>
         </div>
       ) : (
-        /* Hidden: guardar valor 0 per indicar desactivat */
         <>
           <input type="hidden" name="descompte_germa_tipus" value={tipus} />
           <input type="hidden" name="descompte_germa_valor" value="0" />

@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 import { actualitzarPerfilAction } from './actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -39,6 +39,7 @@ function FieldError({ errors, field }: { errors?: Record<string, string[]>; fiel
 
 export function PerfilForm({ dades }: { dades: PerfilData }) {
   const [state, action, pending] = useActionState(actualitzarPerfilAction, undefined)
+  const [talla, setTalla] = useState(dades.talla_samarreta ?? '')
 
   return (
     <form action={action} className="space-y-6">
@@ -209,9 +210,9 @@ export function PerfilForm({ dades }: { dades: PerfilData }) {
 
         <div className="space-y-1.5 max-w-xs">
           <Label htmlFor="talla_samarreta">Talla de samarreta</Label>
-          <Select name="talla_samarreta" defaultValue={dades.talla_samarreta ?? ''}>
+          <Select name="talla_samarreta" value={talla} onValueChange={(v) => setTalla(v ?? '')}>
             <SelectTrigger id="talla_samarreta">
-              <SelectValue placeholder="Selecciona talla" />
+              <SelectValue placeholder="Selecciona talla">{talla || undefined}</SelectValue>
             </SelectTrigger>
             <SelectContent>
               {TALLES.map((t) => (
