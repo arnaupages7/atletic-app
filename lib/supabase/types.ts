@@ -74,6 +74,7 @@ export interface Database {
           assignat?: boolean
           assignat_at?: string | null
         }
+        Relationships: []
       }
       membres: {
         Row: {
