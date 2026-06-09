@@ -130,10 +130,14 @@ export async function importarMigracioAction(
 
   if (rows.length === 0) return { error: 'No s\'han trobat files vàlides al fitxer.' }
 
+  // Desduplicar per DNI: si un DNI apareix més d'una vegada, queda la darrera fila
+  const mapRows = new Map(rows.map(r => [r.dni, r]))
+  const rowsUnics = Array.from(mapRows.values())
+
   const supabase = await createServiceClient()
   const { data, error } = await supabase
     .from('migracio_socis')
-    .upsert(rows, { onConflict: 'dni' })
+    .upsert(rowsUnics, { onConflict: 'dni' })
     .select('dni')
 
   if (error) return { error: `Error de base de dades: ${error.message}` }
