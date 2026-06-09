@@ -18,6 +18,7 @@ import {
   Shield,
   ShieldCheck,
   ArrowLeftRight,
+  Shirt,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { buttonVariants } from '@/components/ui/button'
@@ -33,6 +34,7 @@ export type GestorInfo = {
 const navItems = [
   { href: '/backoffice', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { href: '/backoffice/jugadors', label: 'Jugadors', icon: UserCheck, exact: false },
+  { href: '/backoffice/samarretes', label: 'Samarretes', icon: Shirt, exact: false },
   { href: '/backoffice/socis', label: 'Socis', icon: Users, exact: false },
   { href: '/backoffice/events', label: 'Events i partits', icon: Calendar, exact: false },
 ]
