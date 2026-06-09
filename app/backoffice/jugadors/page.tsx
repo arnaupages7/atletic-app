@@ -34,17 +34,27 @@ const ESTAT_LABELS: Record<EstatJugador, string> = {
 export default async function JugadorsBackofficePage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string; equip?: string }>
+  searchParams: Promise<{ tab?: string; equip?: string; temporada?: string }>
 }) {
   const supabase = await createServiceClient()
   const params = await searchParams
   const tab = (params.tab ?? 'pendent_aprovacio') as EstatJugador | 'tots'
   const equipFilter = params.equip ?? 'tots'
 
-  // Equips disponibles per al filtre
+  // Temporades disponibles (de més recent a més antiga)
+  const { data: temporadesRaw } = await supabase
+    .from('equips')
+    .select('temporada')
+    .order('temporada', { ascending: false })
+
+  const temporades = [...new Set((temporadesRaw ?? []).map((e) => e.temporada))]
+  const temporadaFilter = params.temporada ?? temporades[0] ?? ''
+
+  // Equips de la temporada seleccionada (sense duplicats entre temporades)
   const { data: equips } = await supabase
     .from('equips')
     .select('id, nom')
+    .eq('temporada', temporadaFilter)
     .order('nom')
 
   // Query jugadors amb filtres
@@ -64,23 +74,34 @@ export default async function JugadorsBackofficePage({
 
   if (tab !== 'tots') query = query.eq('estat', tab)
   if (equipFilter !== 'tots') query = query.eq('equip_id', equipFilter)
+  if (temporadaFilter) query = query.eq('temporada', temporadaFilter)
 
   const { data: jugadors } = await query
 
-  // Count pendents per badge
+  // Count pendents (sense filtre de temporada per no perdre cap avís)
   const { count: countPendents } = await supabase
     .from('jugadors')
     .select('id', { count: 'exact', head: true })
     .eq('estat', 'pendent_aprovacio')
 
-  // Helpers per construir URLs preservant els dos filtres
+  // ── Helpers URL ──────────────────────────────────────────────
   const tabUrl = (t: string) => {
     const p = new URLSearchParams({ tab: t })
+    if (temporadaFilter) p.set('temporada', temporadaFilter)
     if (equipFilter !== 'tots') p.set('equip', equipFilter)
     return `/backoffice/jugadors?${p}`
   }
+
+  const temporadaUrl = (t: string) => {
+    // Canviar temporada reseteja l'equip
+    const p = new URLSearchParams({ tab })
+    if (t) p.set('temporada', t)
+    return `/backoffice/jugadors?${p}`
+  }
+
   const equipUrl = (e: string) => {
     const p = new URLSearchParams({ tab })
+    if (temporadaFilter) p.set('temporada', temporadaFilter)
     if (e !== 'tots') p.set('equip', e)
     return `/backoffice/jugadors?${p}`
   }
@@ -129,37 +150,61 @@ export default async function JugadorsBackofficePage({
         ))}
       </div>
 
-      {/* Filtre d'equip */}
-      {equips && equips.length > 0 && (
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs text-muted-foreground font-medium shrink-0">Equip:</span>
-          <Link
-            href={equipUrl('tots')}
-            className={cn(
-              'px-3 py-1 rounded-full text-xs font-medium transition-colors border',
-              equipFilter === 'tots'
-                ? 'bg-primary text-primary-foreground border-primary'
-                : 'bg-background text-muted-foreground border-border hover:border-primary hover:text-primary'
-            )}
-          >
-            Tots
-          </Link>
-          {equips.map((equip) => (
+      {/* Filtres */}
+      <div className="space-y-3">
+        {/* Filtre temporada */}
+        {temporades.length > 1 && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs text-muted-foreground font-medium shrink-0">Temporada:</span>
+            {temporades.map((t) => (
+              <Link
+                key={t}
+                href={temporadaUrl(t)}
+                className={cn(
+                  'px-3 py-1 rounded-full text-xs font-medium transition-colors border',
+                  temporadaFilter === t
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-background text-muted-foreground border-border hover:border-primary hover:text-primary'
+                )}
+              >
+                {t}
+              </Link>
+            ))}
+          </div>
+        )}
+
+        {/* Filtre equip */}
+        {equips && equips.length > 0 && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs text-muted-foreground font-medium shrink-0">Equip:</span>
             <Link
-              key={equip.id}
-              href={equipUrl(equip.id)}
+              href={equipUrl('tots')}
               className={cn(
                 'px-3 py-1 rounded-full text-xs font-medium transition-colors border',
-                equipFilter === equip.id
+                equipFilter === 'tots'
                   ? 'bg-primary text-primary-foreground border-primary'
                   : 'bg-background text-muted-foreground border-border hover:border-primary hover:text-primary'
               )}
             >
-              {equip.nom}
+              Tots
             </Link>
-          ))}
-        </div>
-      )}
+            {equips.map((equip) => (
+              <Link
+                key={equip.id}
+                href={equipUrl(equip.id)}
+                className={cn(
+                  'px-3 py-1 rounded-full text-xs font-medium transition-colors border',
+                  equipFilter === equip.id
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-background text-muted-foreground border-border hover:border-primary hover:text-primary'
+                )}
+              >
+                {equip.nom}
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Llistat */}
       <Card>
