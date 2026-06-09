@@ -3,7 +3,8 @@
 import { useTransition, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import { Pencil, Trash2 } from 'lucide-react'
 import { toggleCupoAction, eliminarCupoAction } from '../nou/actions'
 
@@ -40,12 +41,13 @@ export function CupoActions({
   return (
     <div className="flex items-center justify-end gap-1.5">
       {/* Editar */}
-      <Button variant="ghost" size="icon" className="size-8" asChild>
-        <Link href={`/backoffice/cupons/${id}/editar`}>
-          <Pencil className="size-3.5" />
-          <span className="sr-only">Editar</span>
-        </Link>
-      </Button>
+      <Link
+        href={`/backoffice/cupons/${id}/editar`}
+        className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }), 'size-8')}
+      >
+        <Pencil className="size-3.5" />
+        <span className="sr-only">Editar</span>
+      </Link>
 
       {/* Activar / Desactivar */}
       <Button
