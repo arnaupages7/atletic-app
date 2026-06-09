@@ -13,6 +13,7 @@ import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { Users, Calendar, CreditCard, ChevronRight, AlertCircle, IdCard } from 'lucide-react'
 import { PagarQuotaForm } from './_components/pagar-quota-form'
+import { GestionarSubscripcioForm } from './_components/gestionar-subscripcio-form'
 
 export const metadata: Metadata = { title: 'Inici' }
 
@@ -28,7 +29,7 @@ export default async function PortalPage() {
   // Dades del soci + membre
   const { data: soci } = await supabase
     .from('socis')
-    .select('id, estat, data_alta')
+    .select('id, estat, data_alta, stripe_customer_id')
     .eq('user_id', user.id)
     .single()
 
@@ -149,7 +150,7 @@ export default async function PortalPage() {
             </div>
           </div>
           {soci.estat === 'actiu' && (
-            <div className="mt-4 pt-4 border-t border-white/20">
+            <div className="mt-4 pt-4 border-t border-white/20 flex flex-wrap gap-2">
               <Link
                 href="/portal/carnet"
                 className={cn(
@@ -160,6 +161,9 @@ export default async function PortalPage() {
                 <IdCard className="size-3.5" />
                 Veure i imprimir carnet
               </Link>
+              {soci.stripe_customer_id && (
+                <GestionarSubscripcioForm />
+              )}
             </div>
           )}
         </CardContent>

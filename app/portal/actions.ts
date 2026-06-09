@@ -88,3 +88,33 @@ export async function pagarQuotaSociAction(
     return { error: 'Error connectant amb el servei de pagament. Torna-ho a intentar.' }
   }
 }
+
+export async function gestionarSubscripcioAction(): Promise<{ error?: string }> {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) redirect('/login')
+
+    const serviceSupabase = await createServiceClient()
+    const { data: soci } = await serviceSupabase
+      .from('socis')
+      .select('stripe_customer_id')
+      .eq('user_id', user.id)
+      .single()
+
+    if (!soci?.stripe_customer_id) {
+      return { error: 'No s\'ha trobat una subscripció activa.' }
+    }
+
+    const session = await stripe.billingPortal.sessions.create({
+      customer: soci.stripe_customer_id,
+      return_url: `${process.env.NEXT_PUBLIC_APP_URL}/portal`,
+    })
+
+    redirect(session.url)
+  } catch (err: unknown) {
+    if (isRedirectError(err)) throw err
+    console.error('[gestionarSubscripcioAction] error:', err)
+    return { error: 'Error connectant amb Stripe. Torna-ho a intentar.' }
+  }
+}
