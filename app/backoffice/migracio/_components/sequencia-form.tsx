@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useState, useEffect } from 'react'
 import { ajustarSequenciaAction, esborrarPendentsAction } from '../actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,8 +9,16 @@ import { Loader2, CheckCircle2, AlertCircle, Trash2 } from 'lucide-react'
 
 export function SequenciaForm({ maxReservat }: { maxReservat: number }) {
   const suggerit = maxReservat > 0 ? maxReservat + 1 : 1
+  const [valor, setValor] = useState(suggerit)
 
   const [state, action, pending] = useActionState(ajustarSequenciaAction, undefined)
+
+  // Quan s'assigna correctament, actualitza el valor mostrat
+  useEffect(() => {
+    if (state && 'success' in state) {
+      setValor((state as { inici: number }).inici)
+    }
+  }, [state])
 
   return (
     <form action={action} className="space-y-4">
@@ -27,7 +35,8 @@ export function SequenciaForm({ maxReservat }: { maxReservat: number }) {
           name="inici"
           type="number"
           min={1}
-          defaultValue={suggerit}
+          value={valor}
+          onChange={(e) => setValor(parseInt(e.target.value) || 1)}
           className="font-mono"
         />
       </div>
