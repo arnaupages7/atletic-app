@@ -15,14 +15,14 @@ export function SequenciaForm({
   sequenciaDesada: number | null
 }) {
   const suggerit = sequenciaDesada ?? (maxReservat > 0 ? maxReservat + 1 : 1)
-  const [valor, setValor] = useState(suggerit)
+  const [valor, setValor] = useState(String(suggerit))
 
   const [state, action, pending] = useActionState(ajustarSequenciaAction, undefined)
 
   // Quan s'assigna correctament, actualitza el valor mostrat
   useEffect(() => {
     if (state && 'success' in state) {
-      setValor((state as { inici: number }).inici)
+      setValor(String((state as { inici: number }).inici))
     }
   }, [state])
 
@@ -42,7 +42,7 @@ export function SequenciaForm({
           type="number"
           min={1}
           value={valor}
-          onChange={(e) => setValor(parseInt(e.target.value) || 1)}
+          onChange={(e) => setValor(e.target.value)}
           onFocus={(e) => e.target.select()}
           className="font-mono"
         />
