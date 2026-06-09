@@ -170,7 +170,7 @@ export default async function JugadorsBackofficePage({
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">#</th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">Jugador</th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden md:table-cell">Equip</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden lg:table-cell">Talla</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden md:table-cell">Talla</th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">Estat</th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden lg:table-cell">Sol·licitud</th>
                 <th className="px-4 py-3"></th>
@@ -201,7 +201,7 @@ export default async function JugadorsBackofficePage({
                       <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">
                         {e?.nom ?? '—'}
                       </td>
-                      <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell">
+                      <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">
                         {j.talla_samarreta ?? '—'}
                       </td>
                       <td className="px-4 py-3">
