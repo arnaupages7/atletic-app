@@ -8,7 +8,7 @@ import { aplicarDescompteGerma } from '@/lib/descompte-germa'
 
 export async function pagarQuotaJugadorAction(
   jugadorId: string,
-  metodePagament: 'card' | 'klarna' = 'card'
+  metodePagament: 'card' | 'bizum' | 'klarna' = 'card'
 ): Promise<{ error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -84,13 +84,18 @@ export async function pagarQuotaJugadorAction(
     ? `Quota futbol base ${jugador.temporada} — ${jm.nom} ${jm.cognom1} (en 3 quotes)`
     : `Quota futbol base ${jugador.temporada} — ${jm.nom} ${jm.cognom1}`
 
+  const paymentMethodTypes: ('card' | 'bizum' | 'klarna')[] =
+    metodePagament === 'klarna' ? ['klarna']
+    : metodePagament === 'bizum' ? ['bizum']
+    : ['card']
+
   // Crear Stripe Checkout Session
   let checkoutUrl: string
   try {
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       locale: 'auto',
-      payment_method_types: metodePagament === 'klarna' ? ['klarna'] : ['card'],
+      payment_method_types: paymentMethodTypes,
       ...(metodePagament === 'klarna' && { billing_address_collection: 'required' }),
       customer_email: sociMembre?.email ?? undefined,
       line_items: [

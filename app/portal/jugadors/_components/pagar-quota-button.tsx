@@ -2,7 +2,7 @@
 
 import { useTransition, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { CreditCard, Loader2 } from 'lucide-react'
+import { CreditCard, Smartphone, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { importAmbKlarna } from '@/lib/klarna'
 import { pagarQuotaJugadorAction } from '../actions'
@@ -17,7 +17,7 @@ const fmt = (cents: number) =>
 
 export function PagarQuotaButton({ jugadorId, importBase }: PagarQuotaButtonProps) {
   const [isPending, startTransition] = useTransition()
-  const [metode, setMetode] = useState<'card' | 'klarna'>('card')
+  const [metode, setMetode] = useState<'card' | 'bizum' | 'klarna'>('card')
 
   const importKlarna = importAmbKlarna(importBase)
   const importPerQuota = Math.ceil(importKlarna / 3)
@@ -29,42 +29,48 @@ export function PagarQuotaButton({ jugadorId, importBase }: PagarQuotaButtonProp
     })
   }
 
+  const opcions: { id: typeof metode; label: string; preu: string; descripcio: string }[] = [
+    {
+      id: 'card',
+      label: 'Targeta',
+      preu: fmt(importBase),
+      descripcio: 'Visa, Mastercard…',
+    },
+    {
+      id: 'bizum',
+      label: 'Bizum',
+      preu: fmt(importBase),
+      descripcio: 'Pagament mòbil',
+    },
+    {
+      id: 'klarna',
+      label: 'En 3 quotes',
+      preu: `${fmt(importPerQuota)}/mes`,
+      descripcio: `Total ${fmt(importKlarna)} · Klarna`,
+    },
+  ]
+
   return (
     <div className="space-y-3">
       {/* Selector de mètode de pagament */}
-      <div className="grid grid-cols-2 gap-2">
-        <button
-          type="button"
-          onClick={() => setMetode('card')}
-          className={cn(
-            'rounded-lg border p-3 text-left transition-all',
-            metode === 'card'
-              ? 'border-primary bg-primary/5 ring-1 ring-primary'
-              : 'border-border hover:border-muted-foreground/40'
-          )}
-        >
-          <p className="text-xs font-medium text-muted-foreground mb-0.5">Al comptat</p>
-          <p className="text-base font-semibold">{fmt(importBase)}</p>
-          <p className="text-xs text-muted-foreground mt-0.5">Pagament únic</p>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setMetode('klarna')}
-          className={cn(
-            'rounded-lg border p-3 text-left transition-all',
-            metode === 'klarna'
-              ? 'border-primary bg-primary/5 ring-1 ring-primary'
-              : 'border-border hover:border-muted-foreground/40'
-          )}
-        >
-          <p className="text-xs font-medium text-muted-foreground mb-0.5">En 3 quotes</p>
-          <p className="text-base font-semibold">
-            {fmt(importPerQuota)}
-            <span className="text-xs font-normal text-muted-foreground">/mes</span>
-          </p>
-          <p className="text-xs text-muted-foreground mt-0.5">Total {fmt(importKlarna)} · via Klarna</p>
-        </button>
+      <div className="grid grid-cols-3 gap-2">
+        {opcions.map((o) => (
+          <button
+            key={o.id}
+            type="button"
+            onClick={() => setMetode(o.id)}
+            className={cn(
+              'rounded-lg border p-3 text-left transition-all',
+              metode === o.id
+                ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                : 'border-border hover:border-muted-foreground/40'
+            )}
+          >
+            <p className="text-xs font-medium text-muted-foreground mb-0.5">{o.label}</p>
+            <p className="text-sm font-semibold leading-tight">{o.preu}</p>
+            <p className="text-xs text-muted-foreground mt-0.5 leading-tight">{o.descripcio}</p>
+          </button>
+        ))}
       </div>
 
       <Button
@@ -75,6 +81,8 @@ export function PagarQuotaButton({ jugadorId, importBase }: PagarQuotaButtonProp
       >
         {isPending ? (
           <Loader2 className="size-4 animate-spin" />
+        ) : metode === 'bizum' ? (
+          <Smartphone className="size-4" />
         ) : (
           <CreditCard className="size-4" />
         )}
@@ -82,7 +90,9 @@ export function PagarQuotaButton({ jugadorId, importBase }: PagarQuotaButtonProp
           ? 'Preparant pagament…'
           : metode === 'klarna'
             ? 'Pagar en 3 quotes · Klarna'
-            : 'Pagar al comptat'}
+            : metode === 'bizum'
+              ? 'Pagar amb Bizum'
+              : 'Pagar amb targeta'}
       </Button>
     </div>
   )

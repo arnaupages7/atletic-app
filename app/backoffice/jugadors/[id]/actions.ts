@@ -138,6 +138,7 @@ export async function aprovarJugadorAction(jugadorId: string): Promise<{ error?:
     ) {
       const session = await stripe.checkout.sessions.create({
         mode: 'payment',
+        locale: 'auto',
         customer_email: sociMembre?.email ?? undefined,
         line_items: [
           {
