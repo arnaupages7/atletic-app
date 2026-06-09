@@ -576,6 +576,10 @@ export interface Database {
         Args: Record<PropertyKey, never>
         Returns: number
       }
+      set_sequencia_numero_membre: {
+        Args: { inici: number }
+        Returns: void
+      }
     }
     Enums: {
       tipus_membre: TipusMembre
