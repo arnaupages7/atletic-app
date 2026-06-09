@@ -55,6 +55,7 @@ export default async function JugadorsBackofficePage({
       estat,
       temporada,
       equip_id,
+      talla_samarreta,
       created_at,
       membres!inner(nom, cognom1, numero_membre),
       equips(id, nom)
@@ -169,6 +170,7 @@ export default async function JugadorsBackofficePage({
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">#</th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">Jugador</th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden md:table-cell">Equip</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden lg:table-cell">Talla</th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">Estat</th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden lg:table-cell">Sol·licitud</th>
                 <th className="px-4 py-3"></th>
@@ -177,7 +179,7 @@ export default async function JugadorsBackofficePage({
             <tbody className="divide-y">
               {(!jugadors || jugadors.length === 0) ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                  <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
                     {tab === 'pendent_aprovacio'
                       ? 'No hi ha sol·licituds pendents'
                       : 'No s\'han trobat jugadors'}
@@ -198,6 +200,9 @@ export default async function JugadorsBackofficePage({
                       </td>
                       <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">
                         {e?.nom ?? '—'}
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell">
+                        {j.talla_samarreta ?? '—'}
                       </td>
                       <td className="px-4 py-3">
                         <span className={cn(
