@@ -189,6 +189,7 @@ export interface Database {
           temporada: string
           foto_fitxa_url: string | null
           document_dni_url: string | null
+          document_dni_darrere_url: string | null
           num_catsalut: string | null
           talla_samarreta: TallaSamarreta | null
           genere: string | null
@@ -208,6 +209,7 @@ export interface Database {
           temporada: string
           foto_fitxa_url?: string | null
           document_dni_url?: string | null
+          document_dni_darrere_url?: string | null
           num_catsalut?: string | null
           talla_samarreta?: TallaSamarreta | null
           genere?: string | null
@@ -227,6 +229,7 @@ export interface Database {
           temporada?: string
           foto_fitxa_url?: string | null
           document_dni_url?: string | null
+          document_dni_darrere_url?: string | null
           num_catsalut?: string | null
           talla_samarreta?: TallaSamarreta | null
           genere?: string | null

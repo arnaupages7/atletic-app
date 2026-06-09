@@ -14,9 +14,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
-import { Upload, X, FileImage } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import { DateSelect } from '@/components/ui/date-select'
+import { FileUploadZone } from './_components/file-upload-zone'
 
 type Equip = { id: string; nom: string; places_disponibles: number | null }
 
@@ -36,7 +35,6 @@ function FieldError({
 
 export function InscripcioForm({ equips, preuDefecteEuros = 300 }: { equips: Equip[]; preuDefecteEuros?: number }) {
   const [state, action, pending] = useActionState(inscriureJugadorAction, undefined)
-  const [fotoNom, setFotoNom] = useState<string | null>(null)
   const v = state?.values ?? {}
 
   // Selects controlats
@@ -205,8 +203,8 @@ export function InscripcioForm({ equips, preuDefecteEuros = 300 }: { equips: Equ
 
       <Separator />
 
-      {/* ── Secció 3: Informació mèdica + foto ── */}
-      <section className="space-y-4">
+      {/* ── Secció 3: Documentació ── */}
+      <section className="space-y-5">
         <div>
           <h2 className="text-base font-semibold">Documentació</h2>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -214,6 +212,7 @@ export function InscripcioForm({ equips, preuDefecteEuros = 300 }: { equips: Equ
           </p>
         </div>
 
+        {/* CATSalut + foto fitxa */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1.5">
             <Label htmlFor="num_catsalut">Número targeta CATSalut</Label>
@@ -232,66 +231,43 @@ export function InscripcioForm({ equips, preuDefecteEuros = 300 }: { equips: Equ
             </p>
           </div>
 
-          {/* Upload foto fitxa */}
-          <div className="space-y-1.5">
-            <Label htmlFor="foto_fitxa">
-              Foto fitxa{' '}
-              <span className="text-muted-foreground font-normal">(obligatòria)</span>
-            </Label>
-            <label
-              htmlFor="foto_fitxa"
-              className={cn(
-                'flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-4 cursor-pointer',
-                'hover:bg-muted/50 transition-colors',
-                state?.errors?.foto_fitxa
-                  ? 'border-destructive'
-                  : 'border-border',
-                fotoNom && 'bg-muted/30 border-solid border-primary/30'
-              )}
-            >
-              {fotoNom ? (
-                <>
-                  <FileImage className="size-6 text-primary" />
-                  <span className="text-xs font-medium text-foreground text-center break-all max-w-full">
-                    {fotoNom}
-                  </span>
-                  <span
-                    role="button"
-                    onClick={(e) => {
-                      e.preventDefault()
-                      setFotoNom(null)
-                      const input = document.getElementById('foto_fitxa') as HTMLInputElement
-                      if (input) input.value = ''
-                    }}
-                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive"
-                  >
-                    <X className="size-3" />
-                    Treure
-                  </span>
-                </>
-              ) : (
-                <>
-                  <Upload className="size-6 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground text-center">
-                    Clica per seleccionar o arrossega aquí
-                    <br />
-                    JPG, PNG o WebP · màx. 5 MB
-                  </span>
-                </>
-              )}
-            </label>
-            <input
-              id="foto_fitxa"
-              name="foto_fitxa"
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              className="sr-only"
-              onChange={(e) => {
-                const file = e.target.files?.[0]
-                setFotoNom(file?.name ?? null)
-              }}
+          <FileUploadZone
+            id="foto_fitxa"
+            name="foto_fitxa"
+            label="Foto fitxa"
+            sublabel="(obligatòria)"
+            hasError={!!state?.errors?.foto_fitxa}
+            errors={state?.errors?.foto_fitxa}
+          />
+        </div>
+
+        {/* Foto DNI/NIE */}
+        <div className="space-y-3">
+          <div>
+            <p className="text-sm font-medium">Foto del DNI / NIE del jugador</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Puja una imatge clara de cada cara. El club la verificarà manualment abans d&apos;aprovar la inscripció.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FileUploadZone
+              id="dni_davant"
+              name="dni_davant"
+              label="Cara davantera"
+              sublabel="(obligatòria)"
+              hasError={!!state?.errors?.dni_davant}
+              errors={state?.errors?.dni_davant}
+              hint="JPG, PNG o WebP · màx. 5 MB"
             />
-            <FieldError errors={state?.errors} field="foto_fitxa" />
+            <FileUploadZone
+              id="dni_darrere"
+              name="dni_darrere"
+              label="Cara posterior"
+              sublabel="(obligatòria)"
+              hasError={!!state?.errors?.dni_darrere}
+              errors={state?.errors?.dni_darrere}
+              hint="JPG, PNG o WebP · màx. 5 MB"
+            />
           </div>
         </div>
       </section>

@@ -55,23 +55,50 @@ export async function inscriureJugadorAction(
     }
   }
 
-  // ── 3. Validar foto ──────────────────────────────────────────
+  // ── 3. Validar arxius ────────────────────────────────────────
   const fotoFile = formData.get('foto_fitxa') as File | null
+  const dniDavantFile = formData.get('dni_davant') as File | null
+  const dniDarrereFile = formData.get('dni_darrere') as File | null
 
+  const fileErrors: Record<string, string[]> = {}
+
+  // Foto fitxa
   if (!fotoFile || fotoFile.size === 0) {
-    return { errors: { foto_fitxa: ['La foto del jugador és obligatòria.'] }, values: extractValues(formData), timestamp: Date.now() }
+    fileErrors.foto_fitxa = ['La foto del jugador és obligatòria.']
+  } else if (!ACCEPTED_IMAGE_TYPES.includes(fotoFile.type)) {
+    fileErrors.foto_fitxa = ['Formats acceptats: JPG, PNG o WebP.']
+  } else if (fotoFile.size > MAX_FILE_SIZE) {
+    fileErrors.foto_fitxa = ['La foto no pot superar els 5 MB.']
   }
-  if (!ACCEPTED_IMAGE_TYPES.includes(fotoFile.type)) {
-    return { errors: { foto_fitxa: ['Formats acceptats: JPG, PNG o WebP.'] }, values: extractValues(formData), timestamp: Date.now() }
+
+  // DNI davant
+  if (!dniDavantFile || dniDavantFile.size === 0) {
+    fileErrors.dni_davant = ['La foto de la cara davantera del DNI és obligatòria.']
+  } else if (!ACCEPTED_IMAGE_TYPES.includes(dniDavantFile.type)) {
+    fileErrors.dni_davant = ['Formats acceptats: JPG, PNG o WebP.']
+  } else if (dniDavantFile.size > MAX_FILE_SIZE) {
+    fileErrors.dni_davant = ['El document no pot superar els 5 MB.']
   }
-  if (fotoFile.size > MAX_FILE_SIZE) {
-    return { errors: { foto_fitxa: ['La foto no pot superar els 5 MB.'] }, values: extractValues(formData), timestamp: Date.now() }
+
+  // DNI darrere
+  if (!dniDarrereFile || dniDarrereFile.size === 0) {
+    fileErrors.dni_darrere = ['La foto de la cara posterior del DNI és obligatòria.']
+  } else if (!ACCEPTED_IMAGE_TYPES.includes(dniDarrereFile.type)) {
+    fileErrors.dni_darrere = ['Formats acceptats: JPG, PNG o WebP.']
+  } else if (dniDarrereFile.size > MAX_FILE_SIZE) {
+    fileErrors.dni_darrere = ['El document no pot superar els 5 MB.']
+  }
+
+  if (Object.keys(fileErrors).length > 0) {
+    return { errors: fileErrors, values: extractValues(formData), timestamp: Date.now() }
   }
 
   // ── 4. Validar resta del formulari (Zod) ─────────────────────
   const raw = Object.fromEntries(formData.entries())
-  // Treure foto del raw perquè Zod no la reconeix com a string
+  // Treure arxius del raw perquè Zod no els reconeix com a strings
   delete (raw as Record<string, unknown>).foto_fitxa
+  delete (raw as Record<string, unknown>).dni_davant
+  delete (raw as Record<string, unknown>).dni_darrere
 
   const parsed = InscripcioJugadorSchema.safeParse(raw)
 
@@ -149,24 +176,48 @@ export async function inscriureJugadorAction(
     return { error: 'Error intern creant el perfil del jugador. Torna-ho a intentar.' }
   }
 
-  // ── 6. Pujar foto a Supabase Storage ─────────────────────────
-  const ext = fotoFile.name.split('.').pop()?.toLowerCase() || 'jpg'
-  const storagePath = `jugadors/${membre.id}/foto-fitxa.${ext}`
+  // ── 6. Pujar arxius a Supabase Storage ──────────────────────
+  const fotoExt = fotoFile!.name.split('.').pop()?.toLowerCase() || 'jpg'
+  const dniDavantExt = dniDavantFile!.name.split('.').pop()?.toLowerCase() || 'jpg'
+  const dniDarrereExt = dniDarrereFile!.name.split('.').pop()?.toLowerCase() || 'jpg'
 
-  const fotoBuffer = Buffer.from(await fotoFile.arrayBuffer())
+  const fotoPath = `jugadors/${membre.id}/foto-fitxa.${fotoExt}`
+  const dniDavantPath = `jugadors/${membre.id}/dni-davant.${dniDavantExt}`
+  const dniDarrere = `jugadors/${membre.id}/dni-darrere.${dniDarrereExt}`
 
-  const { error: uploadError } = await serviceSupabase.storage
-    .from('documents')
-    .upload(storagePath, fotoBuffer, {
-      contentType: fotoFile.type,
-      upsert: false,
-    })
+  const uploadedPaths: string[] = []
 
-  if (uploadError) {
-    // Rollback membre
+  const uploadArxiu = async (file: File, path: string): Promise<string | null> => {
+    const buffer = Buffer.from(await file.arrayBuffer())
+    const { error } = await serviceSupabase.storage
+      .from('documents')
+      .upload(path, buffer, { contentType: file.type, upsert: false })
+    if (error) return error.message
+    uploadedPaths.push(path)
+    return null
+  }
+
+  const fotoError = await uploadArxiu(fotoFile!, fotoPath)
+  if (fotoError) {
     await serviceSupabase.from('membres').delete().eq('id', membre.id)
-    console.error('inscripcio: error pujant foto', uploadError)
-    return { error: 'Error pujant la foto. Comprova el format i mida, i torna-ho a intentar.' }
+    console.error('inscripcio: error pujant foto fitxa', fotoError)
+    return { error: 'Error pujant la foto de fitxa. Comprova el format i mida, i torna-ho a intentar.' }
+  }
+
+  const dniDavantError = await uploadArxiu(dniDavantFile!, dniDavantPath)
+  if (dniDavantError) {
+    await serviceSupabase.storage.from('documents').remove(uploadedPaths)
+    await serviceSupabase.from('membres').delete().eq('id', membre.id)
+    console.error('inscripcio: error pujant dni davant', dniDavantError)
+    return { error: 'Error pujant la foto del DNI (cara davantera). Torna-ho a intentar.' }
+  }
+
+  const dniDarrereError = await uploadArxiu(dniDarrereFile!, dniDarrere)
+  if (dniDarrereError) {
+    await serviceSupabase.storage.from('documents').remove(uploadedPaths)
+    await serviceSupabase.from('membres').delete().eq('id', membre.id)
+    console.error('inscripcio: error pujant dni darrere', dniDarrereError)
+    return { error: 'Error pujant la foto del DNI (cara posterior). Torna-ho a intentar.' }
   }
 
   // ── 7. Crear entrada a `jugadors` ────────────────────────────
@@ -177,7 +228,9 @@ export async function inscriureJugadorAction(
       soci_responsable_id: soci.id,
       equip_id,
       temporada: temporadaActual,
-      foto_fitxa_url: storagePath, // ruta relativa al bucket
+      foto_fitxa_url: fotoPath,
+      document_dni_url: dniDavantPath,
+      document_dni_darrere_url: dniDarrere,
       num_catsalut,
       talla_samarreta,
       genere: genere || null,
@@ -189,8 +242,8 @@ export async function inscriureJugadorAction(
     })
 
   if (jugadorError) {
-    // Rollback: treure foto + membre
-    await serviceSupabase.storage.from('documents').remove([storagePath])
+    // Rollback: treure arxius + membre
+    await serviceSupabase.storage.from('documents').remove(uploadedPaths)
     await serviceSupabase.from('membres').delete().eq('id', membre.id)
     console.error('inscripcio: error creant jugador', jugadorError)
     return { error: 'Error intern registrant la inscripció. Torna-ho a intentar.' }

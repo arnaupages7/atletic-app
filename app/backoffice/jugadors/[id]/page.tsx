@@ -59,6 +59,8 @@ export default async function JugadorDetallPage({
       dni,
       adreca,
       foto_fitxa_url,
+      document_dni_url,
+      document_dni_darrere_url,
       motiu_denegacio,
       consentiment_privacitat,
       consentiment_comunicacions,
@@ -80,14 +82,18 @@ export default async function JugadorDetallPage({
     .eq('id', jugador.soci_responsable_id)
     .single()
 
-  // URL signada de la foto (vàlida 1h)
-  let fotoUrl: string | null = null
-  if (jugador.foto_fitxa_url) {
-    const { data: signed } = await serviceSupabase.storage
-      .from('documents')
-      .createSignedUrl(jugador.foto_fitxa_url, 3600)
-    fotoUrl = signed?.signedUrl ?? null
+  // URLs signades per a totes les imatges (vàlides 1h)
+  const signUrl = async (path: string | null): Promise<string | null> => {
+    if (!path) return null
+    const { data } = await serviceSupabase.storage.from('documents').createSignedUrl(path, 3600)
+    return data?.signedUrl ?? null
   }
+
+  const [fotoUrl, dniDavantUrl, dniDarrereUrl] = await Promise.all([
+    signUrl(jugador.foto_fitxa_url),
+    signUrl(jugador.document_dni_url),
+    signUrl(jugador.document_dni_darrere_url),
+  ])
 
   const jm = jugador.membres as unknown as {
     nom: string; cognom1: string; cognom2: string | null
@@ -141,30 +147,84 @@ export default async function JugadorDetallPage({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Foto fitxa */}
-        <div className="md:col-span-1">
-          {fotoUrl ? (
-            <div className="space-y-2">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Foto fitxa</p>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={fotoUrl}
-                alt={`Foto de ${jm.nom}`}
-                className="w-full aspect-[3/4] object-cover rounded-lg border"
-              />
-              <a
-                href={fotoUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-              >
-                <ExternalLink className="size-3" />
-                Obrir a mida completa
-              </a>
+        {/* Columna esquerra: foto fitxa + DNI */}
+        <div className="md:col-span-1 space-y-5">
+          {/* Foto fitxa */}
+          <div>
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Foto fitxa</p>
+            {fotoUrl ? (
+              <div className="space-y-1.5">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={fotoUrl}
+                  alt={`Foto de ${jm.nom}`}
+                  className="w-full aspect-[3/4] object-cover rounded-lg border"
+                />
+                <a
+                  href={fotoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                >
+                  <ExternalLink className="size-3" />
+                  Obrir a mida completa
+                </a>
+              </div>
+            ) : (
+              <div className="w-full aspect-[3/4] rounded-lg border bg-muted flex items-center justify-center text-sm text-muted-foreground">
+                Sense foto
+              </div>
+            )}
+          </div>
+
+          {/* DNI / NIE */}
+          {(dniDavantUrl || dniDarrereUrl) && (
+            <div>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">DNI / NIE</p>
+              <div className="grid grid-cols-2 gap-2">
+                {/* Cara davantera */}
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground text-center">Davant</p>
+                  {dniDavantUrl ? (
+                    <a href={dniDavantUrl} target="_blank" rel="noopener noreferrer">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={dniDavantUrl}
+                        alt="DNI cara davantera"
+                        className="w-full aspect-[3/2] object-cover rounded border hover:opacity-80 transition-opacity"
+                      />
+                    </a>
+                  ) : (
+                    <div className="w-full aspect-[3/2] rounded border bg-muted" />
+                  )}
+                </div>
+                {/* Cara posterior */}
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground text-center">Darrere</p>
+                  {dniDarrereUrl ? (
+                    <a href={dniDarrereUrl} target="_blank" rel="noopener noreferrer">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={dniDarrereUrl}
+                        alt="DNI cara posterior"
+                        className="w-full aspect-[3/2] object-cover rounded border hover:opacity-80 transition-opacity"
+                      />
+                    </a>
+                  ) : (
+                    <div className="w-full aspect-[3/2] rounded border bg-muted" />
+                  )}
+                </div>
+              </div>
             </div>
-          ) : (
-            <div className="w-full aspect-[3/4] rounded-lg border bg-muted flex items-center justify-center text-sm text-muted-foreground">
-              Sense foto
+          )}
+
+          {/* Si no hi ha cap document */}
+          {!dniDavantUrl && !dniDarrereUrl && (
+            <div>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">DNI / NIE</p>
+              <div className="rounded-lg border bg-muted p-3 text-center text-xs text-muted-foreground">
+                No s&apos;han pujat fotos del DNI
+              </div>
             </div>
           )}
         </div>
