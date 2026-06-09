@@ -7,6 +7,7 @@ import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { ChevronLeft, Printer, ExternalLink } from 'lucide-react'
 import { ResolucioForm } from './_components/resolucio-form'
+import { CanviEquipForm } from './_components/canvi-equip-form'
 import type { EstatJugador } from '@/lib/supabase/types'
 
 export const metadata: Metadata = { title: 'Detall jugador' }
@@ -81,6 +82,13 @@ export default async function JugadorDetallPage({
     .select('nom, cognom1, email, telefon')
     .eq('id', jugador.soci_responsable_id)
     .single()
+
+  // Llista d'equips actius (per canviar d'equip)
+  const { data: equipsActius } = await serviceSupabase
+    .from('equips')
+    .select('id, nom')
+    .eq('actiu', true)
+    .order('nom')
 
   // URLs signades per a totes les imatges (vàlides 1h)
   const signUrl = async (path: string | null): Promise<string | null> => {
@@ -263,11 +271,24 @@ export default async function JugadorDetallPage({
                 Inscripció
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-0">
               <Row label="Equip" value={equip?.nom} />
               <Row label="Temporada" value={jugador.temporada} />
               <Row label="Consentiment privacitat" value={jugador.consentiment_privacitat ? 'Sí' : 'No'} />
               <Row label="Consentiment comunicacions" value={jugador.consentiment_comunicacions ? 'Sí' : 'No'} />
+              {/* Canviar equip */}
+              {jugador.estat !== 'baixa' && jugador.estat !== 'denegada' && (equipsActius?.length ?? 0) > 0 && (
+                <div className="pt-4 mt-2 border-t">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+                    Canviar equip
+                  </p>
+                  <CanviEquipForm
+                    jugadorId={id}
+                    equipActualId={jugador.equip_id}
+                    equips={equipsActius ?? []}
+                  />
+                </div>
+              )}
             </CardContent>
           </Card>
 

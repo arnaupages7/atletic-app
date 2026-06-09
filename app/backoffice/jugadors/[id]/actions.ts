@@ -187,6 +187,41 @@ export async function aprovarJugadorAction(jugadorId: string): Promise<{ error?:
   return {}
 }
 
+// ── Canviar equip ────────────────────────────────────────────
+export type CanviEquipState = { error?: string; ok?: boolean } | undefined
+
+export async function canviarEquipAction(
+  jugadorId: string,
+  _prevState: CanviEquipState,
+  formData: FormData
+): Promise<CanviEquipState> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const serviceSupabase = await createServiceClient()
+
+  const { data: gestor } = await serviceSupabase
+    .from('gestors')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('actiu', true)
+    .single()
+  if (!gestor) return { error: 'No tens permís per fer aquesta acció.' }
+
+  const nouEquipId = (formData.get('equip_id') as string | null)?.trim()
+  if (!nouEquipId) return { error: "Selecciona un equip." }
+
+  const { error: updateError } = await serviceSupabase
+    .from('jugadors')
+    .update({ equip_id: nouEquipId })
+    .eq('id', jugadorId)
+
+  if (updateError) return { error: "Error actualitzant l'equip. Torna-ho a intentar." }
+
+  return { ok: true }
+}
+
 // ── Denegar jugador ──────────────────────────────────────────
 const DenegarSchema = z.object({
   motiu: z.string().min(5, { error: 'El motiu ha de tenir mínim 5 caràcters.' }),
