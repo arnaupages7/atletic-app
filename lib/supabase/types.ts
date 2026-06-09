@@ -47,6 +47,34 @@ export type EquipSlug = (typeof EQUIPS_SLUGS)[number]
 export interface Database {
   public: {
     Tables: {
+      migracio_socis: {
+        Row: {
+          dni: string
+          numero_membre: number
+          nom: string | null
+          cognom1: string | null
+          creat_at: string
+          assignat: boolean
+          assignat_at: string | null
+        }
+        Insert: {
+          dni: string
+          numero_membre: number
+          nom?: string | null
+          cognom1?: string | null
+          creat_at?: string
+          assignat?: boolean
+          assignat_at?: string | null
+        }
+        Update: {
+          dni?: string
+          numero_membre?: number
+          nom?: string | null
+          cognom1?: string | null
+          assignat?: boolean
+          assignat_at?: string | null
+        }
+      }
       membres: {
         Row: {
           id: string

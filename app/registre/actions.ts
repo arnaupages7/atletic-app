@@ -97,7 +97,17 @@ async function _registreAction(formData: FormData): Promise<RegistreState> {
 
   const userId = authData.user.id
 
-  // 3. Crear registre a `membres` (numero_membre assignat per sequence)
+  // 3. Comprovar si el DNI té un número de soci reservat del sistema antic
+  const { data: migracio } = await supabase
+    .from('migracio_socis')
+    .select('numero_membre')
+    .eq('dni', dniUpper)
+    .eq('assignat', false)
+    .maybeSingle()
+
+  const numeroReservat = migracio?.numero_membre
+
+  // 4. Crear registre a `membres`
   const { data: membre, error: membreError } = await supabase
     .from('membres')
     .insert({
@@ -108,6 +118,7 @@ async function _registreAction(formData: FormData): Promise<RegistreState> {
       email: data.email,
       telefon: data.telefon,
       data_naixement: data.data_naixement || null,
+      ...(numeroReservat != null ? { numero_membre: numeroReservat } : {}),
     })
     .select('id, numero_membre')
     .single()
@@ -118,7 +129,15 @@ async function _registreAction(formData: FormData): Promise<RegistreState> {
     return { error: 'Error intern creant el perfil. Torna-ho a intentar.' }
   }
 
-  // 4. Crear registre a `socis`
+  // Marcar el número com assignat si venia de migració
+  if (numeroReservat != null) {
+    await supabase
+      .from('migracio_socis')
+      .update({ assignat: true, assignat_at: new Date().toISOString() })
+      .eq('dni', dniUpper)
+  }
+
+  // 5. Crear registre a `socis`
   const esMenor = calcularEdat(data.data_naixement) < 18
   const { error: sociError } = await supabase.from('socis').insert({
     id: membre.id,
