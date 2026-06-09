@@ -37,6 +37,9 @@ export const InscripcioJugadorSchema = z.object({
   consentiment_privacitat: z.literal('on', {
     error: 'Cal acceptar la política de privacitat per continuar.',
   }),
+  consentiment_reglament: z.literal('on', {
+    error: "Cal acceptar el reglament de règim intern per continuar.",
+  }),
   consentiment_comunicacions: z.string().optional(),
 })
 

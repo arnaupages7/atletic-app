@@ -377,8 +377,12 @@ export function RegistreForm() {
             <div className="space-y-1">
               <Label htmlFor="consentiment_privacitat" className="text-sm leading-snug cursor-pointer">
                 He llegit i accepto la{' '}
-                <Link href="/privacitat" className="underline underline-offset-2">
+                <Link href="/privacitat" className="underline underline-offset-2" target="_blank" rel="noopener noreferrer">
                   política de privacitat
+                </Link>{' '}
+                i l&apos;{' '}
+                <Link href="/avis-legal" className="underline underline-offset-2" target="_blank" rel="noopener noreferrer">
+                  avís legal
                 </Link>{' '}
                 <span className="text-destructive">*</span>
               </Label>

@@ -208,6 +208,37 @@ export async function desarDescompteGermaAction(
   }
 }
 
+// ── Documents legals ──────────────────────────────────────────────────────────
+
+export async function desarDocumentsLegalsAction(
+  _prevState: { error?: string; success?: boolean } | undefined,
+  formData: FormData
+): Promise<{ error?: string; success?: boolean }> {
+  try {
+    const supabase = await verificarAdmin()
+
+    const urlPrivacitat = (formData.get('url_privacitat') as string | null)?.trim() || null
+    const urlAvisLegal = (formData.get('url_avis_legal') as string | null)?.trim() || null
+    const urlReglament = (formData.get('url_reglament') as string | null)?.trim() || null
+
+    await supabase.from('configuracio').upsert([
+      { clau: 'url_privacitat', valor: urlPrivacitat, actualitzat_el: new Date().toISOString() },
+      { clau: 'url_avis_legal', valor: urlAvisLegal, actualitzat_el: new Date().toISOString() },
+      { clau: 'url_reglament', valor: urlReglament, actualitzat_el: new Date().toISOString() },
+    ])
+
+    revalidatePath('/backoffice/configuracio')
+    revalidatePath('/privacitat')
+    revalidatePath('/avis-legal')
+    revalidatePath('/reglament')
+    return { success: true }
+  } catch (err: unknown) {
+    if (isRedirectError(err)) throw err
+    console.error('[desarDocumentsLegalsAction]', err)
+    return { error: 'Error desant els documents legals.' }
+  }
+}
+
 // ── Plantilles de correu ──────────────────────────────────────────────────────
 
 export async function desarPlantillaAction(

@@ -333,7 +333,7 @@ export function InscripcioForm({ equips, preuDefecteEuros = 300 }: { equips: Equ
               >
                 Accepto la{' '}
                 <a
-                  href="/politica-privacitat"
+                  href="/privacitat"
                   className="underline underline-offset-4"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -344,6 +344,34 @@ export function InscripcioForm({ equips, preuDefecteEuros = 300 }: { equips: Equ
                 incloent-hi les dades mèdiques i la imatge. (Obligatori)
               </Label>
               <FieldError errors={state?.errors} field="consentiment_privacitat" />
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3">
+            <Checkbox
+              id="consentiment_reglament"
+              name="consentiment_reglament"
+              value="on"
+              defaultChecked={v.consentiment_reglament === 'on'}
+              aria-invalid={!!state?.errors?.consentiment_reglament}
+            />
+            <div className="space-y-1">
+              <Label
+                htmlFor="consentiment_reglament"
+                className="text-sm leading-snug cursor-pointer"
+              >
+                He llegit i accepto el{' '}
+                <a
+                  href="/reglament"
+                  className="underline underline-offset-4"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  reglament de règim intern
+                </a>{' '}
+                del club. (Obligatori)
+              </Label>
+              <FieldError errors={state?.errors} field="consentiment_reglament" />
             </div>
           </div>
 

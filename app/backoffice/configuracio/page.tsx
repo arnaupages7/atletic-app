@@ -7,12 +7,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { Pencil, Image as ImageIcon, Mail, Settings } from 'lucide-react'
+import { Pencil, Image as ImageIcon, Mail, Settings, FileText } from 'lucide-react'
 import { ConfiguracioGeneralForm } from './_components/configuracio-general-form'
 import { CarnetBuilder } from './_components/carnet-builder'
 import { TemporadaForm } from './_components/temporada-form'
 import { PreuDefecteForm } from './_components/preu-defecte-form'
 import { DescompteGermaForm } from './_components/descompte-germa-form'
+import { DocumentsLegalsForm } from './_components/documents-legals-form'
 import type { CarnetElement } from './_components/carnet-builder'
 
 export const metadata: Metadata = { title: 'Configuració' }
@@ -53,6 +54,9 @@ export default async function ConfiguracioPage() {
   }
 
   const temporadaActiva = config['temporada_activa'] ?? '2025-26'
+  const urlPrivacitat = config['url_privacitat'] ?? ''
+  const urlAvisLegal = config['url_avis_legal'] ?? ''
+  const urlReglament = config['url_reglament'] ?? ''
   const preuDefecteCents = config['preu_defecte_jugador'] ? parseInt(config['preu_defecte_jugador'], 10) : 30000
   const preuDefecteEuros = preuDefecteCents / 100
 
@@ -97,6 +101,10 @@ export default async function ConfiguracioPage() {
           <TabsTrigger value="configuracio" className="gap-1.5">
             <Settings className="size-3.5" />
             General
+          </TabsTrigger>
+          <TabsTrigger value="documents" className="gap-1.5">
+            <FileText className="size-3.5" />
+            Documents legals
           </TabsTrigger>
         </TabsList>
 
@@ -231,6 +239,29 @@ export default async function ConfiguracioPage() {
             </CardHeader>
             <CardContent>
               <PreuDefecteForm preuDefecteEuros={preuDefecteEuros} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ── Tab Documents legals ────────────────────── */}
+        <TabsContent value="documents" className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Documents legals</CardTitle>
+              <CardDescription>
+                Configura els enllaços als documents legals del club. Quan s&apos;accedeix a les
+                rutes <span className="font-mono text-xs">/privacitat</span>,{' '}
+                <span className="font-mono text-xs">/avis-legal</span> o{' '}
+                <span className="font-mono text-xs">/reglament</span>, l&apos;usuari serà
+                redirigit automàticament a l&apos;URL configurada.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <DocumentsLegalsForm
+                urlPrivacitat={urlPrivacitat}
+                urlAvisLegal={urlAvisLegal}
+                urlReglament={urlReglament}
+              />
             </CardContent>
           </Card>
         </TabsContent>
