@@ -18,15 +18,23 @@ export default async function MigracioPage() {
     supabase.from('migracio_socis').select('*', { count: 'exact', head: true }).eq('assignat', false),
   ])
 
-  // Número màxim reservat (per suggerir seqüència)
-  const { data: maxRow } = await supabase
-    .from('migracio_socis')
-    .select('numero_membre')
-    .order('numero_membre', { ascending: false })
-    .limit(1)
-    .maybeSingle()
+  // Número màxim reservat (per suggerir seqüència) + valor desat a configuració
+  const [{ data: maxRow }, { data: configSeq }] = await Promise.all([
+    supabase
+      .from('migracio_socis')
+      .select('numero_membre')
+      .order('numero_membre', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from('configuracio')
+      .select('valor')
+      .eq('clau', 'sequencia_inici_socis')
+      .maybeSingle(),
+  ])
 
   const maxReservat = maxRow?.numero_membre ?? 0
+  const sequenciaDesada = configSeq?.valor ? parseInt(configSeq.valor) : null
 
   // Últims registres (taula)
   const { data: registres } = await supabase
@@ -91,7 +99,7 @@ export default async function MigracioPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <SequenciaForm maxReservat={maxReservat} />
+              <SequenciaForm maxReservat={maxReservat} sequenciaDesada={sequenciaDesada} />
             </CardContent>
           </Card>
 

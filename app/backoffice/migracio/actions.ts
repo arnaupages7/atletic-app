@@ -116,6 +116,12 @@ export async function ajustarSequenciaAction(
   const { error } = await supabase.rpc('set_sequencia_numero_membre', { inici })
   if (error) return { error: `Error: ${error.message}` }
 
+  // Persistir el valor configurat per mostrar-lo al refresc de pàgina
+  await supabase.from('configuracio').upsert(
+    { clau: 'sequencia_inici_socis', valor: String(inici), actualitzat_el: new Date().toISOString() },
+    { onConflict: 'clau' }
+  )
+
   revalidatePath('/backoffice/migracio')
   return { success: true, inici }
 }

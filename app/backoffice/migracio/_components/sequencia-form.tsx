@@ -7,8 +7,14 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Loader2, CheckCircle2, AlertCircle, Trash2 } from 'lucide-react'
 
-export function SequenciaForm({ maxReservat }: { maxReservat: number }) {
-  const suggerit = maxReservat > 0 ? maxReservat + 1 : 1
+export function SequenciaForm({
+  maxReservat,
+  sequenciaDesada,
+}: {
+  maxReservat: number
+  sequenciaDesada: number | null
+}) {
+  const suggerit = sequenciaDesada ?? (maxReservat > 0 ? maxReservat + 1 : 1)
   const [valor, setValor] = useState(suggerit)
 
   const [state, action, pending] = useActionState(ajustarSequenciaAction, undefined)
