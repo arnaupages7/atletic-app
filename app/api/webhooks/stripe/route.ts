@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { constructWebhookEvent } from '@/lib/stripe'
+import { constructWebhookEvent, stripe } from '@/lib/stripe'
 import { createServiceClient } from '@/lib/supabase/server'
 import { enviarEmail } from '@/lib/email'
+import { resend } from '@/lib/resend'
 import type Stripe from 'stripe'
 
 export async function POST(request: NextRequest) {
@@ -213,6 +214,47 @@ async function handleRenovacioSoci(
       billing_reason: 'renovacio_anual',
     },
   })
+
+  // Email de confirmació de renovació al soci
+  try {
+    const { data: membre } = await supabase
+      .from('membres')
+      .select('nom, email')
+      .eq('id', soci.id)
+      .single()
+
+    if (membre?.email) {
+      const importEuros = ((invoice.amount_paid ?? 0) / 100).toFixed(2).replace('.', ',')
+      const urlPortal = process.env.NEXT_PUBLIC_APP_URL ?? 'https://portal.atletic.cat'
+      const from = process.env.EMAIL_FROM ?? 'Atlètic Club Banyoles <no-reply@atleticbanyoles.cat>'
+
+      await resend.emails.send({
+        from,
+        to: membre.email,
+        subject: 'Quota de soci renovada — Atlètic Club Banyoles',
+        html: `
+          <div style="font-family:sans-serif;max-width:520px;margin:0 auto">
+            <h2 style="color:#1a1a1a">Quota renovada correctament</h2>
+            <p>Hola ${membre.nom},</p>
+            <p>La teva quota de soci de l'<strong>Atlètic Club Banyoles</strong> s'ha renovat automàticament.</p>
+            <table style="border-collapse:collapse;width:100%;margin:24px 0">
+              <tr><td style="padding:6px 12px;font-weight:600;background:#f5f5f5">Concepte</td><td style="padding:6px 12px">Quota anual de soci</td></tr>
+              <tr><td style="padding:6px 12px;font-weight:600;background:#f5f5f5">Import</td><td style="padding:6px 12px">${importEuros} €</td></tr>
+              <tr><td style="padding:6px 12px;font-weight:600;background:#f5f5f5">Estat</td><td style="padding:6px 12px">Pagat</td></tr>
+            </table>
+            <p>
+              <a href="${urlPortal}/portal" style="background:#e85d04;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;font-weight:600">
+                Accedir al portal
+              </a>
+            </p>
+            <p style="color:#888;font-size:12px;margin-top:32px">Atlètic Club Banyoles — portal.atletic.cat</p>
+          </div>
+        `,
+      })
+    }
+  } catch (emailError) {
+    console.error('[webhook] Error enviant email renovació:', emailError)
+  }
 }
 
 async function handlePagamentFallit(
@@ -237,4 +279,49 @@ async function handlePagamentFallit(
     .from('socis')
     .update({ estat: 'pendent_pagament' })
     .eq('id', soci.id)
+
+  // Email d'avís al soci perquè actualitzi la seva targeta
+  try {
+    const { data: membre } = await supabase
+      .from('membres')
+      .select('nom, email')
+      .eq('id', soci.id)
+      .single()
+
+    if (membre?.email) {
+      const urlPortal = process.env.NEXT_PUBLIC_APP_URL ?? 'https://portal.atletic.cat'
+      const from = process.env.EMAIL_FROM ?? 'Atlètic Club Banyoles <no-reply@atleticbanyoles.cat>'
+
+      // Obtenir el portal de Stripe per actualitzar mètode de pagament
+      const portalSession = await stripe.billingPortal.sessions.create({
+        customer: customerId,
+        return_url: `${urlPortal}/portal`,
+      }).catch(() => null)
+
+      const urlActualitzar = portalSession?.url ?? `${urlPortal}/portal`
+
+      await resend.emails.send({
+        from,
+        to: membre.email,
+        subject: 'Problema amb el pagament de la quota — Atlètic Club Banyoles',
+        html: `
+          <div style="font-family:sans-serif;max-width:520px;margin:0 auto">
+            <h2 style="color:#c0392b">No hem pogut cobrar la teva quota</h2>
+            <p>Hola ${membre.nom},</p>
+            <p>No hem pogut processar el pagament de la teva quota anual de soci. Això pot passar si la targeta ha caducat o no té fons suficients.</p>
+            <p>Stripe tornarà a intentar el cobrament automàticament en els propers dies. Si vols evitar la interrupció del teu servei, actualitza el mètode de pagament ara:</p>
+            <p style="margin:24px 0">
+              <a href="${urlActualitzar}" style="background:#e85d04;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;font-weight:600">
+                Actualitzar mètode de pagament
+              </a>
+            </p>
+            <p style="color:#888;font-size:13px">Si el problema persisteix, contacta amb el club a <a href="mailto:administracio@atletic.cat">administracio@atletic.cat</a>.</p>
+            <p style="color:#888;font-size:12px;margin-top:32px">Atlètic Club Banyoles — portal.atletic.cat</p>
+          </div>
+        `,
+      })
+    }
+  } catch (emailError) {
+    console.error('[webhook] Error enviant email pagament fallat:', emailError)
+  }
 }
