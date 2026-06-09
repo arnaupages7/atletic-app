@@ -196,7 +196,7 @@ export async function inscriureJugadorAction(
     return { error: 'Error intern registrant la inscripció. Torna-ho a intentar.' }
   }
 
-  // ── 8. Email de notificació als gestors (no bloquejant) ──────
+  // ── 8. Emails de notificació (no bloquejants) ───────────────
   try {
     const { data: equipData } = await serviceSupabase
       .from('equips')
@@ -206,32 +206,67 @@ export async function inscriureJugadorAction(
 
     const { data: membreSoci } = await serviceSupabase
       .from('membres')
-      .select('nom, cognom1')
+      .select('nom, cognom1, email')
       .eq('id', soci.id)
       .single()
 
+    const from = process.env.EMAIL_FROM ?? 'Atlètic Club Banyoles <no-reply@atleticbanyoles.cat>'
+    const nomEquip = equipData?.nom ?? equip_id
+    const nomJugador = `${nom} ${cognom1}${cognom2 ? ' ' + cognom2 : ''}`
+    const urlPortal = process.env.NEXT_PUBLIC_APP_URL ?? 'https://portal.atletic.cat'
+
+    // 8a. Notificació al backoffice
     await resend.emails.send({
-      from: process.env.EMAIL_FROM ?? 'Atlètic Club Banyoles <no-reply@atleticbanyoles.cat>',
-      to: 'administracio@atletic.cat',
-      subject: `Nova inscripció de jugador — ${nom} ${cognom1}`,
+      from,
+      to: process.env.EMAIL_ADMIN ?? 'administracio@atletic.cat',
+      subject: `Nova inscripció de jugador — ${nomJugador}`,
       html: `
         <h2>Nova sol·licitud d'inscripció de jugador</h2>
         <table style="border-collapse:collapse;width:100%;max-width:480px">
-          <tr><td style="padding:6px 12px;font-weight:600">Jugador</td><td style="padding:6px 12px">${nom} ${cognom1}${cognom2 ? ' ' + cognom2 : ''}</td></tr>
+          <tr><td style="padding:6px 12px;font-weight:600">Jugador</td><td style="padding:6px 12px">${nomJugador}</td></tr>
           <tr style="background:#f5f5f5"><td style="padding:6px 12px;font-weight:600">Data naix.</td><td style="padding:6px 12px">${data_naixement}</td></tr>
-          <tr><td style="padding:6px 12px;font-weight:600">Equip</td><td style="padding:6px 12px">${equipData?.nom ?? equip_id}</td></tr>
+          <tr><td style="padding:6px 12px;font-weight:600">Equip</td><td style="padding:6px 12px">${nomEquip}</td></tr>
           <tr style="background:#f5f5f5"><td style="padding:6px 12px;font-weight:600">Temporada</td><td style="padding:6px 12px">${temporadaActual}</td></tr>
           <tr><td style="padding:6px 12px;font-weight:600">Núm. membre</td><td style="padding:6px 12px">#${membre.numero_membre}</td></tr>
           <tr style="background:#f5f5f5"><td style="padding:6px 12px;font-weight:600">Tutor</td><td style="padding:6px 12px">${membreSoci ? `${membreSoci.nom} ${membreSoci.cognom1}` : user.email}</td></tr>
         </table>
         <p style="margin-top:24px">
-          <a href="${process.env.NEXT_PUBLIC_APP_URL}/backoffice/jugadors" style="background:#1a1a1a;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;font-weight:600">
+          <a href="${urlPortal}/backoffice/jugadors" style="background:#1a1a1a;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;font-weight:600">
             Revisar al backoffice
           </a>
         </p>
         <p style="color:#888;font-size:12px;margin-top:32px">Atlètic Club Banyoles — portal.atletic.cat</p>
       `,
     })
+
+    // 8b. Confirmació al soci que ha fet la inscripció
+    const emailSoci = membreSoci?.email ?? user.email
+    if (emailSoci) {
+      await resend.emails.send({
+        from,
+        to: emailSoci,
+        subject: `Sol·licitud d'inscripció rebuda — ${nomJugador}`,
+        html: `
+          <div style="font-family:sans-serif;max-width:520px;margin:0 auto">
+            <h2 style="color:#1a1a1a">Sol·licitud d'inscripció rebuda</h2>
+            <p>Hem rebut la sol·licitud d'inscripció per al jugador <strong>${nomJugador}</strong> a l'equip <strong>${nomEquip}</strong>.</p>
+            <p>L'equip tècnic del club revisarà la sol·licitud i et notificarem quan estigui aprovada. Un cop aprovada, rebràs les instruccions per completar el pagament.</p>
+            <table style="border-collapse:collapse;width:100%;margin:24px 0">
+              <tr><td style="padding:6px 12px;font-weight:600;background:#f5f5f5">Jugador</td><td style="padding:6px 12px">${nomJugador}</td></tr>
+              <tr><td style="padding:6px 12px;font-weight:600;background:#f5f5f5">Equip</td><td style="padding:6px 12px">${nomEquip}</td></tr>
+              <tr><td style="padding:6px 12px;font-weight:600;background:#f5f5f5">Temporada</td><td style="padding:6px 12px">${temporadaActual}</td></tr>
+              <tr><td style="padding:6px 12px;font-weight:600;background:#f5f5f5">Estat</td><td style="padding:6px 12px">Pendent d'aprovació</td></tr>
+            </table>
+            <p>
+              <a href="${urlPortal}/portal/jugadors" style="background:#e85d04;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;font-weight:600">
+                Veure els meus jugadors
+              </a>
+            </p>
+            <p style="color:#888;font-size:12px;margin-top:32px">Atlètic Club Banyoles — portal.atletic.cat</p>
+          </div>
+        `,
+      })
+    }
   } catch (emailError) {
     // L'email falla silenciosament — la inscripció queda registrada
     console.error('inscripcio: error enviant email notificació', emailError)
