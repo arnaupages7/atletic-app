@@ -43,6 +43,7 @@ export function SequenciaForm({
           min={1}
           value={valor}
           onChange={(e) => setValor(parseInt(e.target.value) || 1)}
+          onFocus={(e) => e.target.select()}
           className="font-mono"
         />
       </div>
