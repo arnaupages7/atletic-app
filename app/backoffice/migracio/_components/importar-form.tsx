@@ -3,7 +3,7 @@
 import { useActionState, useState } from 'react'
 import { importarMigracioAction } from '../actions'
 import { Button } from '@/components/ui/button'
-import { Loader2, CheckCircle2, AlertCircle, Upload, FileSpreadsheet, X } from 'lucide-react'
+import { Loader2, CheckCircle2, AlertCircle, Upload, FileSpreadsheet, X, Download } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export function ImportarForm() {
@@ -105,10 +105,20 @@ export function ImportarForm() {
         )
       })()}
 
-      <Button type="submit" disabled={pending || !nomFitxer}>
-        {pending && <Loader2 className="size-4 mr-2 animate-spin" />}
-        Importar
-      </Button>
+      <div className="flex items-center gap-3 flex-wrap">
+        <Button type="submit" disabled={pending || !nomFitxer}>
+          {pending && <Loader2 className="size-4 mr-2 animate-spin" />}
+          Importar
+        </Button>
+        <a
+          href="/api/migracio/model"
+          download
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <Download className="size-4" />
+          Descarregar Excel model
+        </a>
+      </div>
     </form>
   )
 }
