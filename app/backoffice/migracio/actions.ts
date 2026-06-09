@@ -104,7 +104,7 @@ export async function importarMigracioAction(
     const linia = i + 1
     const cols = matriu[i]
 
-    const dni = cols[0]?.replace(/['"]/g, '').trim().toUpperCase()
+    const dni = cols[0]?.replace(/[^A-Z0-9]/gi, '').trim().toUpperCase()
     const numStr = cols[1]?.replace(/['"]/g, '').trim()
 
     // Saltar capçalera si la primera cel·la no sembla un DNI (conté lletres seguides)
