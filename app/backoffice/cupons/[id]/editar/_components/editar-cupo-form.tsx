@@ -5,13 +5,32 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Loader2, Save } from 'lucide-react'
-import { crearCupoAction } from '../actions'
+import { editarCupoAction } from '../actions'
 
 type Equip = { id: string; nom: string }
 
-export function CupoForm({ equips }: { equips: Equip[] }) {
-  const [state, action, pending] = useActionState(crearCupoAction, undefined)
-  const [aplicableA, setAplicableA] = useState<'soci' | 'jugador' | 'tots'>('tots')
+type Defaults = {
+  descripcio: string | null
+  usos_maxims: number | null
+  data_expiracio: string | null
+  aplicable_a: 'soci' | 'jugador' | 'tots'
+  equip_id: string | null
+}
+
+export function EditarCupoForm({
+  cupoId,
+  defaults,
+  equips,
+}: {
+  cupoId: string
+  defaults: Defaults
+  equips: Equip[]
+}) {
+  const boundAction = editarCupoAction.bind(null, cupoId)
+  const [state, action, pending] = useActionState(boundAction, undefined)
+  const [aplicableA, setAplicableA] = useState<'soci' | 'jugador' | 'tots'>(
+    defaults.aplicable_a
+  )
 
   return (
     <form action={action} className="space-y-4">
@@ -21,73 +40,15 @@ export function CupoForm({ equips }: { equips: Equip[] }) {
         </div>
       )}
 
-      {/* Codi */}
-      <div className="space-y-1.5">
-        <Label htmlFor="codi">
-          Codi <span className="text-destructive">*</span>
-        </Label>
-        <Input
-          id="codi"
-          name="codi"
-          placeholder="NADAL25"
-          className="uppercase"
-          style={{ textTransform: 'uppercase' }}
-          aria-invalid={!!state?.errors?.codi}
-        />
-        <p className="text-xs text-muted-foreground">
-          Majúscules, números, guions. El soci l&apos;introdueix al portal.
-        </p>
-        {state?.errors?.codi && (
-          <p className="text-xs text-destructive">{state.errors.codi[0]}</p>
-        )}
-      </div>
-
       {/* Descripció */}
       <div className="space-y-1.5">
         <Label htmlFor="descripcio">Descripció interna</Label>
         <Input
           id="descripcio"
           name="descripcio"
+          defaultValue={defaults.descripcio ?? ''}
           placeholder="Descompte campanya Nadal 2025"
         />
-      </div>
-
-      {/* Tipus + Valor */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-1.5">
-          <Label htmlFor="tipus">
-            Tipus <span className="text-destructive">*</span>
-          </Label>
-          <select
-            id="tipus"
-            name="tipus"
-            className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs focus-visible:ring-1 focus-visible:ring-ring"
-            aria-invalid={!!state?.errors?.tipus}
-          >
-            <option value="percentatge">Percentatge (%)</option>
-            <option value="import_fix">Import fix (€)</option>
-          </select>
-          {state?.errors?.tipus && (
-            <p className="text-xs text-destructive">{state.errors.tipus[0]}</p>
-          )}
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="valor">
-            Valor <span className="text-destructive">*</span>
-          </Label>
-          <Input
-            id="valor"
-            name="valor"
-            type="number"
-            min={1}
-            placeholder="p.ex. 20 o 500 (cèntims)"
-            aria-invalid={!!state?.errors?.valor}
-          />
-          <p className="text-xs text-muted-foreground">% o cèntims (500 = 5€)</p>
-          {state?.errors?.valor && (
-            <p className="text-xs text-destructive">{state.errors.valor[0]}</p>
-          )}
-        </div>
       </div>
 
       {/* Aplicable a */}
@@ -106,13 +67,14 @@ export function CupoForm({ equips }: { equips: Equip[] }) {
         </select>
       </div>
 
-      {/* Equip específic (només visible quan aplicable_a = jugador) */}
+      {/* Equip específic */}
       {aplicableA === 'jugador' && (
         <div className="space-y-1.5">
           <Label htmlFor="equip_id">Equip específic</Label>
           <select
             id="equip_id"
             name="equip_id"
+            defaultValue={defaults.equip_id ?? ''}
             className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs focus-visible:ring-1 focus-visible:ring-ring"
           >
             <option value="">Tots els equips</option>
@@ -138,17 +100,27 @@ export function CupoForm({ equips }: { equips: Equip[] }) {
             type="number"
             min={1}
             placeholder="il·limitat"
+            defaultValue={defaults.usos_maxims ?? ''}
           />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="data_expiracio">Data d&apos;expiració</Label>
-          <Input id="data_expiracio" name="data_expiracio" type="date" />
+          <Input
+            id="data_expiracio"
+            name="data_expiracio"
+            type="date"
+            defaultValue={defaults.data_expiracio ?? ''}
+          />
         </div>
       </div>
 
+      <p className="text-xs text-muted-foreground">
+        El codi, el tipus i el valor no es poden modificar un cop creat el cupó.
+      </p>
+
       <Button type="submit" disabled={pending} className="gap-1.5">
         {pending ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
-        {pending ? 'Creant…' : 'Crear cupó'}
+        {pending ? 'Desant…' : 'Desar canvis'}
       </Button>
     </form>
   )

@@ -7,9 +7,15 @@ import { Badge } from '@/components/ui/badge'
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { PlusCircle, Ticket } from 'lucide-react'
-import { CupoToggle } from './_components/cupo-toggle'
+import { CupoActions } from './_components/cupo-actions'
 
 export const metadata: Metadata = { title: 'Cupons' }
+
+const APLICABLE_LABELS: Record<string, string> = {
+  tots: 'Tots',
+  soci: 'Soci',
+  jugador: 'Jugadors',
+}
 
 export default async function CuponsPage() {
   const supabase = await createClient()
@@ -28,7 +34,13 @@ export default async function CuponsPage() {
 
   const { data: cupons } = await serviceSupabase
     .from('cupons')
-    .select('id, codi, descripcio, tipus, valor, usos_maxims, usos_actuals, actiu, data_expiracio, created_at')
+    .select(`
+      id, codi, descripcio, tipus, valor,
+      usos_maxims, usos_actuals, actiu,
+      data_expiracio, created_at,
+      aplicable_a, equip_id,
+      equips(nom)
+    `)
     .order('created_at', { ascending: false })
 
   const formatValor = (tipus: string, valor: number) =>
@@ -76,6 +88,9 @@ export default async function CuponsPage() {
                   <th className="text-left px-4 py-3 font-medium text-muted-foreground">
                     Descompte
                   </th>
+                  <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden lg:table-cell">
+                    Aplicable a
+                  </th>
                   <th className="text-center px-4 py-3 font-medium text-muted-foreground">
                     Usos
                   </th>
@@ -88,10 +103,9 @@ export default async function CuponsPage() {
               </thead>
               <tbody className="divide-y">
                 {cupons.map((c) => {
-                  const esgotat =
-                    c.usos_maxims !== null && c.usos_actuals >= c.usos_maxims
-                  const expirat =
-                    c.data_expiracio && new Date(c.data_expiracio) < new Date()
+                  const esgotat = c.usos_maxims !== null && c.usos_actuals >= c.usos_maxims
+                  const expirat = c.data_expiracio && new Date(c.data_expiracio) < new Date()
+                  const equip = c.equips as unknown as { nom: string } | null
 
                   return (
                     <tr key={c.id} className="hover:bg-muted/30 transition-colors">
@@ -107,27 +121,26 @@ export default async function CuponsPage() {
                           ({c.tipus === 'percentatge' ? '%' : '€ fix'})
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-center">
-                        <span
-                          className={cn(
-                            'font-medium tabular-nums',
-                            esgotat && 'text-destructive'
+                      <td className="px-4 py-3 hidden lg:table-cell">
+                        <span className="text-sm">
+                          {APLICABLE_LABELS[c.aplicable_a] ?? c.aplicable_a}
+                          {equip && (
+                            <span className="text-muted-foreground ml-1">· {equip.nom}</span>
                           )}
-                        >
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className={cn('font-medium tabular-nums', esgotat && 'text-destructive')}>
                           {c.usos_actuals}
                           {c.usos_maxims !== null && (
-                            <span className="text-muted-foreground font-normal">
-                              /{c.usos_maxims}
-                            </span>
+                            <span className="text-muted-foreground font-normal">/{c.usos_maxims}</span>
                           )}
                         </span>
                       </td>
                       <td className="px-4 py-3 hidden lg:table-cell text-xs text-muted-foreground">
                         {c.data_expiracio
                           ? new Intl.DateTimeFormat('ca-ES', {
-                              day: 'numeric',
-                              month: 'short',
-                              year: 'numeric',
+                              day: 'numeric', month: 'short', year: 'numeric',
                             }).format(new Date(c.data_expiracio))
                           : '—'}
                       </td>
@@ -144,8 +157,8 @@ export default async function CuponsPage() {
                           </Badge>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-right">
-                        <CupoToggle id={c.id} actiu={c.actiu} />
+                      <td className="px-4 py-3">
+                        <CupoActions id={c.id} actiu={c.actiu} />
                       </td>
                     </tr>
                   )

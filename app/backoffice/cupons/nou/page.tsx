@@ -24,6 +24,12 @@ export default async function NouCupoPage() {
     .single()
   if (!gestor) redirect('/backoffice')
 
+  const { data: equips } = await serviceSupabase
+    .from('equips')
+    .select('id, nom')
+    .eq('actiu', true)
+    .order('nom')
+
   return (
     <div className="space-y-6 max-w-lg">
       <div className="space-y-1">
@@ -48,7 +54,7 @@ export default async function NouCupoPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <CupoForm />
+          <CupoForm equips={equips ?? []} />
         </CardContent>
       </Card>
     </div>

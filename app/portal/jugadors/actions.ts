@@ -8,7 +8,8 @@ import { aplicarDescompteGerma } from '@/lib/descompte-germa'
 
 export async function pagarQuotaJugadorAction(
   jugadorId: string,
-  metodePagament: 'card' | 'bizum' | 'klarna' = 'card'
+  metodePagament: 'card' | 'bizum' | 'klarna' = 'card',
+  codiCupo: string = ''
 ): Promise<{ error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -78,6 +79,33 @@ export async function pagarQuotaJugadorAction(
   const jm = jugador.membres as unknown as { nom: string; cognom1: string; numero_membre: number }
   const equip = jugador.equips as unknown as { nom: string } | null
 
+  // ── Validar cupó (opcional) ───────────────────────────────────
+  let stripeCouponId: string | null = null
+  let cupoDbId: string | null = null
+  const codiCupoNorm = codiCupo.trim().toUpperCase()
+
+  if (codiCupoNorm) {
+    const { data: cupo } = await serviceSupabase
+      .from('cupons')
+      .select('id, actiu, usos_maxims, usos_actuals, stripe_coupon_id, data_expiracio, aplicable_a, equip_id')
+      .eq('codi', codiCupoNorm)
+      .single()
+
+    if (!cupo) return { error: `El cupó "${codiCupoNorm}" no existeix.` }
+    if (!cupo.actiu) return { error: 'Aquest cupó no és actiu.' }
+    if (cupo.data_expiracio && new Date(cupo.data_expiracio) < new Date())
+      return { error: 'Aquest cupó ha expirat.' }
+    if (cupo.usos_maxims !== null && cupo.usos_actuals >= cupo.usos_maxims)
+      return { error: 'Aquest cupó ja ha exhaurit els usos disponibles.' }
+    if (cupo.aplicable_a === 'soci')
+      return { error: 'Aquest cupó no és vàlid per a inscripcions de jugadors.' }
+    if (cupo.equip_id && cupo.equip_id !== jugador.equip_id)
+      return { error: 'Aquest cupó no és vàlid per a l\'equip d\'aquest jugador.' }
+
+    cupoDbId = cupo.id
+    stripeCouponId = cupo.stripe_coupon_id
+  }
+
   const importFinal = metodePagament === 'klarna' ? importAmbKlarna(importBase) : importBase
 
   const nomProducte = metodePagament === 'klarna'
@@ -117,7 +145,9 @@ export async function pagarQuotaJugadorAction(
         soci_responsable_id: soci.id,
         numero_membre: String(jm.numero_membre),
         metode_pagament: metodePagament,
+        ...(cupoDbId ? { cupo_id: cupoDbId } : {}),
       },
+      ...(stripeCouponId ? { discounts: [{ coupon: stripeCouponId }] } : {}),
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/exit?status=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/exit?status=cancel`,
     })

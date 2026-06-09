@@ -484,6 +484,8 @@ export interface Database {
           actiu: boolean
           stripe_coupon_id: string | null
           data_expiracio: string | null
+          aplicable_a: 'soci' | 'jugador' | 'tots'
+          equip_id: string | null
           created_at: string
         }
         Insert: {
@@ -497,6 +499,8 @@ export interface Database {
           actiu?: boolean
           stripe_coupon_id?: string | null
           data_expiracio?: string | null
+          aplicable_a?: 'soci' | 'jugador' | 'tots'
+          equip_id?: string | null
           created_at?: string
         }
         Update: {
@@ -510,6 +514,8 @@ export interface Database {
           actiu?: boolean
           stripe_coupon_id?: string | null
           data_expiracio?: string | null
+          aplicable_a?: 'soci' | 'jugador' | 'tots'
+          equip_id?: string | null
           created_at?: string
         }
         Relationships: []

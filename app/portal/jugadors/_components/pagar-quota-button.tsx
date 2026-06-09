@@ -2,7 +2,8 @@
 
 import { useTransition, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { CreditCard, Smartphone, Loader2 } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { CreditCard, Smartphone, Loader2, Tag, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { importAmbKlarna } from '@/lib/klarna'
 import { pagarQuotaJugadorAction } from '../actions'
@@ -18,14 +19,24 @@ const fmt = (cents: number) =>
 export function PagarQuotaButton({ jugadorId, importBase }: PagarQuotaButtonProps) {
   const [isPending, startTransition] = useTransition()
   const [metode, setMetode] = useState<'card' | 'bizum' | 'klarna'>('card')
+  const [codiCupo, setCodiCupo] = useState('')
+  const [cupoError, setCupoError] = useState('')
 
   const importKlarna = importAmbKlarna(importBase)
   const importPerQuota = Math.ceil(importKlarna / 3)
 
   function handleClick() {
+    setCupoError('')
     startTransition(async () => {
-      const result = await pagarQuotaJugadorAction(jugadorId, metode)
-      if (result?.error) alert(result.error)
+      const result = await pagarQuotaJugadorAction(jugadorId, metode, codiCupo)
+      if (result?.error) {
+        // Si l'error és del cupó, mostrar-lo al camp de cupó
+        if (result.error.toLowerCase().includes('cupó')) {
+          setCupoError(result.error)
+        } else {
+          alert(result.error)
+        }
+      }
     })
   }
 
@@ -71,6 +82,41 @@ export function PagarQuotaButton({ jugadorId, importBase }: PagarQuotaButtonProp
             <p className="text-xs text-muted-foreground mt-0.5 leading-tight">{o.descripcio}</p>
           </button>
         ))}
+      </div>
+
+      {/* Camp de cupó de descompte */}
+      <div className="space-y-1">
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Tag className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+            <Input
+              placeholder="Codi de descompte (opcional)"
+              value={codiCupo}
+              onChange={(e) => {
+                setCodiCupo(e.target.value.toUpperCase())
+                if (cupoError) setCupoError('')
+              }}
+              className={cn(
+                'pl-8 uppercase text-sm h-9',
+                cupoError && 'border-destructive focus-visible:ring-destructive'
+              )}
+              disabled={isPending}
+              maxLength={30}
+            />
+            {codiCupo && (
+              <button
+                type="button"
+                onClick={() => { setCodiCupo(''); setCupoError('') }}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="size-3.5" />
+              </button>
+            )}
+          </div>
+        </div>
+        {cupoError && (
+          <p className="text-xs text-destructive">{cupoError}</p>
+        )}
       </div>
 
       <Button

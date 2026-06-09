@@ -44,7 +44,7 @@ export async function pagarQuotaSociAction(
     if (codiCupo) {
       const { data: cupo } = await serviceSupabase
         .from('cupons')
-        .select('id, actiu, usos_maxims, usos_actuals, stripe_coupon_id, data_expiracio')
+        .select('id, actiu, usos_maxims, usos_actuals, stripe_coupon_id, data_expiracio, aplicable_a')
         .eq('codi', codiCupo)
         .single()
 
@@ -54,6 +54,8 @@ export async function pagarQuotaSociAction(
         return { error: 'Aquest cupó ha expirat.' }
       if (cupo.usos_maxims !== null && cupo.usos_actuals >= cupo.usos_maxims)
         return { error: 'Aquest cupó ja ha exhaurit els usos disponibles.' }
+      if (cupo.aplicable_a === 'jugador')
+        return { error: 'Aquest cupó no és vàlid per a la quota de soci.' }
 
       cupoId = cupo.id
       stripeCouponId = cupo.stripe_coupon_id
