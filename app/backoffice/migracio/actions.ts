@@ -1,5 +1,6 @@
 'use server'
 
+import * as XLSX from 'xlsx'
 import { createServiceClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
@@ -22,6 +23,32 @@ function parseCSVLine(line: string): string[] {
   return result
 }
 
+/** Extreu files de qualsevol format acceptable (xlsx, xls, csv via File) */
+async function parseFile(file: File): Promise<string[][]> {
+  const buffer = Buffer.from(await file.arrayBuffer())
+  const name = file.name.toLowerCase()
+
+  if (name.endsWith('.csv') || file.type === 'text/csv' || file.type === 'text/plain') {
+    // CSV: parseig manual existent
+    const text = buffer.toString('utf-8')
+    return text
+      .split('\n')
+      .filter(l => l.trim())
+      .map(l => parseCSVLine(l))
+  }
+
+  // xlsx / xls via SheetJS
+  const workbook = XLSX.read(buffer, { type: 'buffer' })
+  const sheetName = workbook.SheetNames[0]
+  if (!sheetName) return []
+  const sheet = workbook.Sheets[sheetName]
+  // header:1 → retorna array de arrays; defval:'' → cel·les buides com a string buit
+  const rows = XLSX.utils.sheet_to_json<unknown[]>(sheet, { header: 1, defval: '' })
+  return rows.map(row =>
+    (row as unknown[]).map(cell => String(cell ?? '').trim())
+  )
+}
+
 // ── Types ────────────────────────────────────────────────────────────────────
 
 export type ImportResult =
@@ -39,17 +66,32 @@ export type EsborrarResult =
 // ── Actions ──────────────────────────────────────────────────────────────────
 
 /**
- * Importa CSV amb format: DNI,numero_membre[,nom,cognom1]
- * Accepta separador coma o punt i coma.
+ * Importa fitxer xlsx, xls o csv amb format: DNI, numero_membre [, nom, cognom1]
+ * La primera fila s'ignora si és una capçalera de text.
  */
 export async function importarMigracioAction(
   _prev: unknown,
   formData: FormData
 ): Promise<ImportResult> {
-  const csv = (formData.get('csv') as string | null)?.trim()
-  if (!csv) return { error: 'Cal enganxar les dades.' }
+  const file = formData.get('fitxer') as File | null
+  if (!file || file.size === 0) return { error: 'Selecciona un fitxer abans d\'importar.' }
 
-  const lines = csv.split('\n').filter(l => l.trim())
+  const ext = file.name.split('.').pop()?.toLowerCase() ?? ''
+  const extesionsAcceptades = ['xlsx', 'xls', 'csv']
+  if (!extesionsAcceptades.includes(ext)) {
+    return { error: 'Format no acceptat. Utilitza .xlsx, .xls o .csv.' }
+  }
+
+  let matriu: string[][]
+  try {
+    matriu = await parseFile(file)
+  } catch (err) {
+    console.error('[importarMigracio] error parsejant fitxer:', err)
+    return { error: 'No s\'ha pogut llegir el fitxer. Comprova que el format és correcte.' }
+  }
+
+  if (matriu.length === 0) return { error: 'El fitxer és buit.' }
+
   const rows: {
     dni: string
     numero_membre: number
@@ -58,14 +100,14 @@ export async function importarMigracioAction(
   }[] = []
   const errors: { linia: number; missatge: string }[] = []
 
-  for (let i = 0; i < lines.length; i++) {
+  for (let i = 0; i < matriu.length; i++) {
     const linia = i + 1
-    const cols = parseCSVLine(lines[i])
+    const cols = matriu[i]
 
     const dni = cols[0]?.replace(/['"]/g, '').trim().toUpperCase()
     const numStr = cols[1]?.replace(/['"]/g, '').trim()
 
-    // Saltar capçalera si és text
+    // Saltar capçalera si la primera cel·la no sembla un DNI (conté lletres seguides)
     if (linia === 1 && isNaN(parseInt(numStr ?? ''))) continue
 
     if (!dni || dni.length < 8) {
@@ -86,7 +128,7 @@ export async function importarMigracioAction(
     })
   }
 
-  if (rows.length === 0) return { error: 'No s\'han trobat files vàlides al CSV.' }
+  if (rows.length === 0) return { error: 'No s\'han trobat files vàlides al fitxer.' }
 
   const supabase = await createServiceClient()
   const { data, error } = await supabase
