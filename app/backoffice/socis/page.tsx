@@ -3,6 +3,7 @@ import { createServiceClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import type { EstatSoci } from '@/lib/supabase/types'
+import { ReenviarBenvingudaButton } from './_components/reenviar-benvinguda-button'
 
 export const metadata: Metadata = { title: 'Socis' }
 
@@ -93,12 +94,13 @@ export default async function SocisPage({
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden md:table-cell">Correu</th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">Estat</th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden lg:table-cell">Alta</th>
+                <th className="px-4 py-3" />
               </tr>
             </thead>
             <tbody className="divide-y">
               {socisFiltrats.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
+                  <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
                     No s&apos;han trobat socis
                   </td>
                 </tr>
@@ -133,6 +135,9 @@ export default async function SocisPage({
                         {s.data_alta
                           ? new Intl.DateTimeFormat('ca-ES').format(new Date(s.data_alta))
                           : '—'}
+                      </td>
+                      <td className="px-4 py-3">
+                        {m.email && <ReenviarBenvingudaButton sociId={s.id} />}
                       </td>
                     </tr>
                   )
