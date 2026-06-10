@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
   const to = req.nextUrl.searchParams.get('to') ?? user.email!
 
   const { data, error } = await resend.emails.send({
-    from: 'Atlètic Club Banyoles <no-reply@atleticbanyoles.cat>',
+    from: 'Atlètic Club Banyoles <no-reply@atletic.cat>',
     to,
     subject: 'Correu de prova — Atlètic Club Banyoles',
     html: `

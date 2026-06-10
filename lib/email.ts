@@ -34,7 +34,7 @@ export async function enviarEmail({
     const cosHtml = substituirVariables(template.cos_html, variables)
 
     const { error } = await resend.emails.send({
-      from: process.env.EMAIL_FROM ?? 'Atlètic Club Banyoles <no-reply@atleticbanyoles.cat>',
+      from: process.env.EMAIL_FROM ?? 'Atlètic Club Banyoles <no-reply@atletic.cat>',
       to,
       subject: assumpte,
       html: cosHtml,
@@ -77,7 +77,7 @@ export async function enviarEmailMassiu({
       return
     }
 
-    const from = process.env.EMAIL_FROM ?? 'Atlètic Club Banyoles <no-reply@atleticbanyoles.cat>'
+    const from = process.env.EMAIL_FROM ?? 'Atlètic Club Banyoles <no-reply@atletic.cat>'
     const CHUNK = 100
 
     for (let i = 0; i < destinataris.length; i += CHUNK) {
