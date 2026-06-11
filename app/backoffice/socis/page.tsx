@@ -4,7 +4,6 @@ import { Card } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import type { EstatSoci } from '@/lib/supabase/types'
 import { ReenviarBenvingudaButton } from './_components/reenviar-benvinguda-button'
-import { BaixaSociButton } from './_components/soci-actions'
 
 export const metadata: Metadata = { title: 'Socis' }
 
@@ -116,10 +115,14 @@ export default async function SocisPage({
                   return (
                     <tr key={s.id} className="hover:bg-muted/30 transition-colors">
                       <td className="px-4 py-3 font-mono text-muted-foreground">
-                        {m.numero_membre}
+                        <a href={`/backoffice/socis/${s.id}`} className="hover:underline">
+                          {m.numero_membre}
+                        </a>
                       </td>
                       <td className="px-4 py-3 font-medium">
-                        {m.nom} {m.cognom1}
+                        <a href={`/backoffice/socis/${s.id}`} className="hover:underline">
+                          {m.nom} {m.cognom1}
+                        </a>
                       </td>
                       <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">
                         {m.email ?? '—'}
@@ -138,10 +141,7 @@ export default async function SocisPage({
                           : '—'}
                       </td>
                       <td className="px-4 py-3">
-                        <div className="flex flex-col items-end gap-1">
-                          {m.email && <ReenviarBenvingudaButton sociId={s.id} />}
-                          {s.estat !== 'baixa' && <BaixaSociButton sociId={s.id} />}
-                        </div>
+                        {m.email && <ReenviarBenvingudaButton sociId={s.id} />}
                       </td>
                     </tr>
                   )
