@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import type { EstatSoci } from '@/lib/supabase/types'
 import { ReenviarBenvingudaButton } from './_components/reenviar-benvinguda-button'
+import { BaixaSociButton } from './_components/soci-actions'
 
 export const metadata: Metadata = { title: 'Socis' }
 
@@ -137,7 +138,10 @@ export default async function SocisPage({
                           : '—'}
                       </td>
                       <td className="px-4 py-3">
-                        {m.email && <ReenviarBenvingudaButton sociId={s.id} />}
+                        <div className="flex flex-col items-end gap-1">
+                          {m.email && <ReenviarBenvingudaButton sociId={s.id} />}
+                          {s.estat !== 'baixa' && <BaixaSociButton sociId={s.id} />}
+                        </div>
                       </td>
                     </tr>
                   )
