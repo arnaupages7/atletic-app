@@ -6,6 +6,7 @@ import { isRedirectError } from 'next/dist/client/components/redirect-error'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { stripe } from '@/lib/stripe'
 import { resend } from '@/lib/resend'
+import type { TallaSamarreta } from '@/lib/supabase/types'
 
 async function verificarGestor() {
   const supabase = await createClient()
@@ -46,7 +47,7 @@ export async function editarSociAction(
     const codiPostal = (formData.get('codi_postal') as string)?.trim() || null
     const poblacio = (formData.get('poblacio') as string)?.trim() || null
     const genere = (formData.get('genere') as string)?.trim() || null
-    const tallaSamarreta = (formData.get('talla_samarreta') as string)?.trim() || null
+    const tallaSamarreta = ((formData.get('talla_samarreta') as string)?.trim() || null) as TallaSamarreta | null
 
     if (!nom || !cognom1) return { error: 'El nom i el primer cognom són obligatoris.' }
 
