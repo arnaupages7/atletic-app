@@ -65,6 +65,7 @@ export default async function JugadorDetallPage({
       motiu_denegacio,
       consentiment_privacitat,
       consentiment_comunicacions,
+      compromis_desplacaments,
       created_at,
       equip_id,
       soci_responsable_id,
@@ -276,6 +277,14 @@ export default async function JugadorDetallPage({
               <Row label="Temporada" value={jugador.temporada} />
               <Row label="Consentiment privacitat" value={jugador.consentiment_privacitat ? 'Sí' : 'No'} />
               <Row label="Consentiment comunicacions" value={jugador.consentiment_comunicacions ? 'Sí' : 'No'} />
+              <Row
+                label="Compromís desplaçaments"
+                value={
+                  jugador.compromis_desplacaments
+                    ? 'Sí ✓'
+                    : <span className="text-amber-600 font-medium">No marcat</span>
+                }
+              />
               {/* Canviar equip */}
               {jugador.estat !== 'baixa' && jugador.estat !== 'denegada' && (equipsActius?.length ?? 0) > 0 && (
                 <div className="pt-4 mt-2 border-t">

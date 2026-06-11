@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState, useState } from 'react'
+import { useActionState, useState, useRef } from 'react'
 import { inscriureJugadorAction } from './actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -36,6 +36,9 @@ function FieldError({
 export function InscripcioForm({ equips, preuDefecteEuros = 300 }: { equips: Equip[]; preuDefecteEuros?: number }) {
   const [state, action, pending] = useActionState(inscriureJugadorAction, undefined)
   const v = state?.values ?? {}
+  const formRef = useRef<HTMLFormElement>(null)
+  const [compromisDeplasaments, setCompromisDeplasaments] = useState(v.compromis_desplacaments === 'on')
+  const [avisVisible, setAvisVisible] = useState(false)
 
   // Selects controlats
   const getEquipLabel = (id: string) => {
@@ -53,7 +56,22 @@ export function InscripcioForm({ equips, preuDefecteEuros = 300 }: { equips: Equ
 
   return (
     // key força remuntatge quan hi ha un nou error → defaultValue i defaultChecked s'apliquen
-    <form key={state?.timestamp ?? 0} action={action} encType="multipart/form-data" className="space-y-8">
+    <form
+      ref={formRef}
+      key={state?.timestamp ?? 0}
+      action={action}
+      encType="multipart/form-data"
+      className="space-y-8"
+      onSubmit={(e) => {
+        if (!compromisDeplasaments && !avisVisible) {
+          e.preventDefault()
+          setAvisVisible(true)
+          setTimeout(() => {
+            document.getElementById('compromis_desplacaments')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          }, 50)
+        }
+      }}
+    >
       {/* Error general */}
       {state?.error && (
         <div
@@ -390,6 +408,46 @@ export function InscripcioForm({ equips, preuDefecteEuros = 300 }: { equips: Equ
               convocatòries i activitats). (Opcional)
             </Label>
           </div>
+
+          <div className="flex items-start gap-3">
+            <Checkbox
+              id="compromis_desplacaments"
+              name="compromis_desplacaments"
+              value="on"
+              checked={compromisDeplasaments}
+              onCheckedChange={(checked) => {
+                setCompromisDeplasaments(!!checked)
+                if (checked) setAvisVisible(false)
+              }}
+            />
+            <div className="space-y-1">
+              <Label
+                htmlFor="compromis_desplacaments"
+                className="text-sm leading-snug cursor-pointer"
+              >
+                Em comprometo a portar el meu fill/a als desplaçaments per jugar partits
+                fora del municipi. (Opcional)
+              </Label>
+            </div>
+          </div>
+
+          {avisVisible && !compromisDeplasaments && (
+            <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 space-y-2 dark:border-amber-700 dark:bg-amber-950/30">
+              <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                Atenció: no heu marcat el compromís de desplaçaments
+              </p>
+              <p className="text-xs text-amber-700 dark:text-amber-300">
+                No marcar aquest camp pot comportar que el club denegui la sol·licitud
+                d&apos;inscripció al futbol base.
+              </p>
+              <button
+                type="submit"
+                className="text-xs font-medium text-amber-800 underline underline-offset-2 hover:text-amber-900 dark:text-amber-200"
+              >
+                Entenc, enviar la sol·licitud igualment
+              </button>
+            </div>
+          )}
         </div>
       </section>
 

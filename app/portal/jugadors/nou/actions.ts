@@ -122,6 +122,7 @@ export async function inscriureJugadorAction(
     telefon,
     num_catsalut,
     consentiment_comunicacions,
+    compromis_desplacaments,
   } = parsed.data
 
   const serviceSupabase = await createServiceClient()
@@ -238,6 +239,7 @@ export async function inscriureJugadorAction(
       adreca,
       consentiment_privacitat: true,
       consentiment_comunicacions: consentiment_comunicacions === 'on',
+      compromis_desplacaments: compromis_desplacaments === 'on',
       estat: 'pendent_aprovacio',
     })
 

@@ -197,6 +197,7 @@ export interface Database {
           adreca: string | null
           consentiment_privacitat: boolean
           consentiment_comunicacions: boolean
+          compromis_desplacaments: boolean
           stripe_session_id: string | null
           estat: EstatJugador
           motiu_denegacio: string | null
@@ -217,6 +218,7 @@ export interface Database {
           adreca?: string | null
           consentiment_privacitat?: boolean
           consentiment_comunicacions?: boolean
+          compromis_desplacaments?: boolean
           stripe_session_id?: string | null
           estat?: EstatJugador
           motiu_denegacio?: string | null
@@ -237,6 +239,7 @@ export interface Database {
           adreca?: string | null
           consentiment_privacitat?: boolean
           consentiment_comunicacions?: boolean
+          compromis_desplacaments?: boolean
           stripe_session_id?: string | null
           estat?: EstatJugador
           motiu_denegacio?: string | null
