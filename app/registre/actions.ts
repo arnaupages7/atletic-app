@@ -5,6 +5,7 @@ import { isRedirectError } from 'next/dist/client/components/redirect-error'
 import { createServiceClient } from '@/lib/supabase/server'
 import { RegistreSchema } from './schema'
 import { enviarEmail } from '@/lib/email'
+import { stripe } from '@/lib/stripe'
 
 function calcularEdat(isoDate: string): number {
   const avui = new Date()
@@ -179,5 +180,26 @@ async function _registreAction(formData: FormData): Promise<RegistreState> {
     })
   }
 
-  redirect('/registre/confirmacio')
+  // 6. Crear sessió de Stripe i redirigir directament al pagament
+  try {
+    const session = await stripe.checkout.sessions.create({
+      mode: 'subscription',
+      customer_email: data.email,
+      line_items: [{ price: process.env.STRIPE_PRICE_SOCI!, quantity: 1 }],
+      metadata: {
+        soci_id: membre.id,
+        user_id: userId,
+        numero_membre: String(membre.numero_membre),
+      },
+      subscription_data: { metadata: { soci_id: membre.id } },
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/exit?status=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/portal`,
+    })
+    redirect(session.url!)
+  } catch (stripeErr: unknown) {
+    if (isRedirectError(stripeErr)) throw stripeErr
+    console.error('[registreAction] Error Stripe:', stripeErr)
+    // Si Stripe falla, el compte ja existeix — el soci pot pagar des del portal
+    redirect('/registre/confirmacio')
+  }
 }
