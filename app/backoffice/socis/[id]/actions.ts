@@ -177,11 +177,19 @@ export async function eliminarSociAction(
       } catch { /* no bloquejant */ }
     }
 
+    // Obtenir user_id per esborrar el compte d'Auth
+    const userId = soci.user_id
+
     // Esborrar pagaments (ON DELETE RESTRICT)
     await serviceSupabase.from('pagaments').delete().eq('membre_id', sociId)
 
     // Esborrar membre (cascadeja a socis)
     await serviceSupabase.from('membres').delete().eq('id', sociId)
+
+    // Esborrar compte d'autenticació (permet que es pugui tornar a registrar)
+    if (userId) {
+      await serviceSupabase.auth.admin.deleteUser(userId)
+    }
 
     revalidatePath('/backoffice/socis')
     redirect('/backoffice/socis')
