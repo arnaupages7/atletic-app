@@ -69,7 +69,7 @@ export default async function EditarJugadorPage({
           cognom2: membre.cognom2 ?? '',
           data_naixement: membre.data_naixement ?? '',
           genere: (jugador.genere as 'M' | 'F' | 'A' | null) ?? undefined,
-          talla_samarreta: (jugador.talla_samarreta ?? 'M') as 'Miss' | 'XS' | 'S' | 'M' | 'L' | 'XL' | '2XL' | '3XL',
+          talla_samarreta: (jugador.talla_samarreta ?? 'M') as import('@/lib/supabase/types').TallaSamarreta,
           adreca: jugador.adreca ?? '',
           telefon: membre.telefon ?? '',
           num_catsalut: jugador.num_catsalut ?? '',

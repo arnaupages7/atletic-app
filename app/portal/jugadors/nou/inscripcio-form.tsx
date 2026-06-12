@@ -19,7 +19,7 @@ import { FileUploadZone } from './_components/file-upload-zone'
 
 type Equip = { id: string; nom: string; places_disponibles: number | null }
 
-const TALLES = ['Miss', 'XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'] as const
+const TALLES = ['5-6', '6-8', '8-10', '10-12', '12-14', 'Miss', 'XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'] as const
 
 function FieldError({
   errors,

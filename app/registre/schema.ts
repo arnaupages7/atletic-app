@@ -31,7 +31,7 @@ export const RegistreSchema = z
     data_naixement: z.string().min(1, { error: 'La data de naixement és obligatòria.' }),
     genere: z.string().optional(),
     talla_samarreta: z
-      .enum(['Miss', 'XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'])
+      .enum(['5-6', '6-8', '8-10', '10-12', '12-14', 'Miss', 'XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'])
       .optional(),
 
     // Contacte

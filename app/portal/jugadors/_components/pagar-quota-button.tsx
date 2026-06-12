@@ -43,15 +43,9 @@ export function PagarQuotaButton({ jugadorId, importBase }: PagarQuotaButtonProp
   const opcions: { id: typeof metode; label: string; preu: string; descripcio: string }[] = [
     {
       id: 'card',
-      label: 'Targeta',
+      label: 'Pagar ara',
       preu: fmt(importBase),
-      descripcio: 'Visa, Mastercard…',
-    },
-    {
-      id: 'bizum',
-      label: 'Bizum',
-      preu: fmt(importBase),
-      descripcio: 'Pagament mòbil',
+      descripcio: 'Targeta, Bizum…',
     },
     {
       id: 'klarna',
@@ -64,7 +58,7 @@ export function PagarQuotaButton({ jugadorId, importBase }: PagarQuotaButtonProp
   return (
     <div className="space-y-3">
       {/* Selector de mètode de pagament */}
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 gap-2">
         {opcions.map((o) => (
           <button
             key={o.id}

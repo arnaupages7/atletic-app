@@ -20,7 +20,7 @@ export type EstatJugador =
   | 'baixa'
 export type EstatPagament = 'pendent' | 'completat' | 'fallat' | 'reemborsat'
 export type RolGestor = 'admin' | 'gestor'
-export type TallaSamarreta = 'Miss' | 'XS' | 'S' | 'M' | 'L' | 'XL' | '2XL' | '3XL'
+export type TallaSamarreta = '5-6' | '6-8' | '8-10' | '10-12' | '12-14' | 'Miss' | 'XS' | 'S' | 'M' | 'L' | 'XL' | '2XL' | '3XL'
 
 // Slugs oficials dels equips (extrets del WordPress)
 export const EQUIPS_SLUGS = [
@@ -257,6 +257,7 @@ export interface Database {
           places_disponibles: number | null
           actiu: boolean
           preu_inscripcio: number | null
+          preu_per_defecte: boolean
           soci_automatic: boolean
           created_at: string
         }
@@ -269,6 +270,7 @@ export interface Database {
           places_disponibles?: number | null
           actiu?: boolean
           preu_inscripcio?: number | null
+          preu_per_defecte?: boolean
           soci_automatic?: boolean
           created_at?: string
         }
@@ -281,6 +283,7 @@ export interface Database {
           places_disponibles?: number | null
           actiu?: boolean
           preu_inscripcio?: number | null
+          preu_per_defecte?: boolean
           soci_automatic?: boolean
           created_at?: string
         }

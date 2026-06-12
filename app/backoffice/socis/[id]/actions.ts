@@ -157,7 +157,7 @@ export async function eliminarSociAction(
 
     const { data: soci } = await serviceSupabase
       .from('socis')
-      .select('stripe_customer_id, user_id')
+      .select('stripe_customer_id, user_id, dni')
       .eq('id', sociId)
       .single()
 
@@ -189,6 +189,14 @@ export async function eliminarSociAction(
     // Esborrar compte d'autenticació (permet que es pugui tornar a registrar)
     if (userId) {
       await serviceSupabase.auth.admin.deleteUser(userId)
+    }
+
+    // Restablir flag de migració perquè pugui tornar a registrar-se amb el número original
+    if (soci.dni) {
+      await serviceSupabase
+        .from('migracio_socis')
+        .update({ assignat: false, assignat_at: null })
+        .eq('dni', soci.dni)
     }
 
     revalidatePath('/backoffice/socis')

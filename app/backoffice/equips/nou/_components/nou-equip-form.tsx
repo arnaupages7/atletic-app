@@ -19,6 +19,7 @@ export function NouEquipForm({ temporadaActiva }: { temporadaActiva: string }) {
   const [nom, setNom] = useState('')
   const [slug, setSlug] = useState('')
   const [slugTouched, setSlugTouched] = useState(false)
+  const [preuPerDefecte, setPreuPerDefecte] = useState(true)
 
   // Auto-omplir slug a partir del nom (si no s'ha editat manualment)
   useEffect(() => {
@@ -81,21 +82,37 @@ export function NouEquipForm({ temporadaActiva }: { temporadaActiva: string }) {
         </div>
 
         {/* Preu */}
-        <div className="space-y-1.5">
-          <Label htmlFor="preu_inscripcio">Preu inscripció</Label>
-          <div className="flex items-center gap-2">
-            <Input
-              id="preu_inscripcio"
-              name="preu_inscripcio"
-              type="number"
-              min={0}
-              step={1}
-              placeholder="300"
-              className="w-24"
+        <div className="space-y-2 sm:col-span-2">
+          <div className="flex items-center gap-2.5">
+            <input
+              type="checkbox"
+              id="preu_per_defecte"
+              name="preu_per_defecte"
+              checked={preuPerDefecte}
+              onChange={(e) => setPreuPerDefecte(e.target.checked)}
+              className="size-4 rounded border-input"
             />
-            <span className="text-sm text-muted-foreground">€</span>
+            <div>
+              <Label htmlFor="preu_per_defecte" className="cursor-pointer">Usar preu per defecte</Label>
+              <p className="text-xs text-muted-foreground">
+                S&apos;actualitza automàticament quan canvia el preu per defecte a Configuració.
+              </p>
+            </div>
           </div>
-          <p className="text-xs text-muted-foreground">Deixa buit per usar el preu per defecte.</p>
+          {!preuPerDefecte && (
+            <div className="flex items-center gap-2 ml-6">
+              <Input
+                id="preu_inscripcio"
+                name="preu_inscripcio"
+                type="number"
+                min={0}
+                step={1}
+                placeholder="300"
+                className="w-24"
+              />
+              <span className="text-sm text-muted-foreground">€</span>
+            </div>
+          )}
         </div>
 
         {/* Places */}

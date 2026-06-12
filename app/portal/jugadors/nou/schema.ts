@@ -16,7 +16,7 @@ export const InscripcioJugadorSchema = z.object({
 
   // Inscripció esportiva
   equip_id: z.string().uuid({ error: 'Selecciona un equip vàlid.' }),
-  talla_samarreta: z.enum(['Miss', 'XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'], {
+  talla_samarreta: z.enum(['5-6', '6-8', '8-10', '10-12', '12-14', 'Miss', 'XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'], {
     error: 'Selecciona una talla de samarreta.',
   }),
 

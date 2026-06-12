@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import * as XLSX from 'xlsx'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 
-const TALLES = ['Miss', 'XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'] as const
+const TALLES = ['5-6', '6-8', '8-10', '10-12', '12-14', 'Miss', 'XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'] as const
 
 function tallesVisibles(totals: Record<string, number>): string[] {
   return (totals['S/T'] ?? 0) > 0 ? [...TALLES, 'S/T'] : [...TALLES]

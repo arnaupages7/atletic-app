@@ -36,7 +36,7 @@ export async function pagarQuotaJugadorAction(
       temporada,
       equip_id,
       membres!inner(nom, cognom1, numero_membre),
-      equips(nom)
+      equips(nom, preu_inscripcio)
     `)
     .eq('id', jugadorId)
     .eq('soci_responsable_id', soci.id)
@@ -72,12 +72,15 @@ export async function pagarQuotaJugadorAction(
   for (const r of configRows ?? []) cfg[r.clau] = r.valor
 
   const preuDefecte = cfg['preu_defecte_jugador'] ? parseInt(cfg['preu_defecte_jugador'], 10) : 30000
-  const importBase = teGerma
-    ? aplicarDescompteGerma(preuDefecte, cfg['descompte_germa_tipus'], cfg['descompte_germa_valor'])
-    : preuDefecte
 
   const jm = jugador.membres as unknown as { nom: string; cognom1: string; numero_membre: number }
-  const equip = jugador.equips as unknown as { nom: string } | null
+  const equip = jugador.equips as unknown as { nom: string; preu_inscripcio: number | null } | null
+
+  // Usar el preu específic de l'equip si en té; sinó, el preu per defecte
+  const preuBase = equip?.preu_inscripcio ?? preuDefecte
+  const importBase = teGerma
+    ? aplicarDescompteGerma(preuBase, cfg['descompte_germa_tipus'], cfg['descompte_germa_valor'])
+    : preuBase
 
   // ── Validar cupó (opcional) ───────────────────────────────────
   let stripeCouponId: string | null = null
@@ -112,10 +115,9 @@ export async function pagarQuotaJugadorAction(
     ? `Quota futbol base ${jugador.temporada} — ${jm.nom} ${jm.cognom1} (en 3 quotes)`
     : `Quota futbol base ${jugador.temporada} — ${jm.nom} ${jm.cognom1}`
 
-  const paymentMethodTypes: ('card' | 'bizum' | 'klarna')[] =
-    metodePagament === 'klarna' ? ['klarna']
-    : metodePagament === 'bizum' ? ['bizum']
-    : ['card']
+  // Per a 'card': no especifiquem payment_method_types → Stripe mostra targeta + Bizum automàticament
+  const paymentMethodTypes: ('card' | 'bizum' | 'klarna')[] | undefined =
+    metodePagament === 'klarna' ? ['klarna'] : undefined
 
   // Crear Stripe Checkout Session
   let checkoutUrl: string
@@ -123,7 +125,7 @@ export async function pagarQuotaJugadorAction(
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       locale: 'auto',
-      payment_method_types: paymentMethodTypes,
+      ...(paymentMethodTypes ? { payment_method_types: paymentMethodTypes } : {}),
       ...(metodePagament === 'klarna' && { billing_address_collection: 'required' }),
       customer_email: sociMembre?.email ?? undefined,
       line_items: [

@@ -158,6 +158,15 @@ export async function inscriureJugadorAction(
     }
   }
 
+  // ── 4c. Comprovar si el DNI té un número de membre reservat del sistema antic ──
+  const { data: migracio } = await serviceSupabase
+    .from('migracio_socis')
+    .select('numero_membre')
+    .eq('dni', dniUpper)
+    .eq('assignat', false)
+    .maybeSingle()
+  const numeroReservat = migracio?.numero_membre
+
   // ── 5. Crear entrada a `membres` ─────────────────────────────
   const { data: membre, error: membreError } = await serviceSupabase
     .from('membres')
@@ -168,6 +177,7 @@ export async function inscriureJugadorAction(
       cognom2: cognom2 || null,
       telefon: telefon || null,
       data_naixement: data_naixement || null,
+      ...(numeroReservat != null ? { numero_membre: numeroReservat } : {}),
     })
     .select('id, numero_membre')
     .single()
@@ -249,6 +259,14 @@ export async function inscriureJugadorAction(
     await serviceSupabase.from('membres').delete().eq('id', membre.id)
     console.error('inscripcio: error creant jugador', jugadorError)
     return { error: 'Error intern registrant la inscripció. Torna-ho a intentar.' }
+  }
+
+  // Marcar número de migració com assignat si n'hi havia
+  if (numeroReservat != null) {
+    await serviceSupabase
+      .from('migracio_socis')
+      .update({ assignat: true, assignat_at: new Date().toISOString() })
+      .eq('dni', dniUpper)
   }
 
   // ── 8. Emails de notificació (no bloquejants) ───────────────

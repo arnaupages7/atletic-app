@@ -29,7 +29,7 @@ type PerfilData = {
   talla_samarreta: string | null
 }
 
-const TALLES = ['Miss', 'XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'] as const
+const TALLES = ['5-6', '6-8', '8-10', '10-12', '12-14', 'Miss', 'XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'] as const
 
 function FieldError({ errors, field }: { errors?: Record<string, string[]>; field: string }) {
   const msgs = errors?.[field]

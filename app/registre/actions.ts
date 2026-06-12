@@ -67,7 +67,7 @@ async function _registreAction(formData: FormData): Promise<RegistreState> {
   const supabase = await createServiceClient()
 
   // 2. Comprovar que el DNI no estigui duplicat
-  const dniUpper = data.dni.toUpperCase()
+  const dniUpper = data.dni.toUpperCase().replace(/[\s.\-]/g, '')
   const [{ count: dniSoci }, { count: dniJugador }] = await Promise.all([
     supabase.from('socis').select('id', { count: 'exact', head: true }).eq('dni', dniUpper),
     supabase.from('jugadors').select('id', { count: 'exact', head: true }).eq('dni', dniUpper),

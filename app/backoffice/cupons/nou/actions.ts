@@ -17,7 +17,7 @@ const CupoBaseSchema = z.object({
     .trim(),
   descripcio: z.string().trim().optional(),
   tipus: z.enum(['percentatge', 'import_fix'], { error: 'Selecciona el tipus de descompte.' }),
-  valor: z.coerce.number().int().positive({ error: 'El valor ha de ser positiu.' }),
+  valor: z.coerce.number().positive({ error: 'El valor ha de ser positiu.' }),
   usos_maxims: z.coerce.number().int().positive().optional().or(z.literal('')),
   data_expiracio: z.string().optional(),
   aplicable_a: z.enum(['soci', 'jugador', 'tots']).default('tots'),
@@ -92,10 +92,13 @@ export async function crearCupoAction(
     // Crear a Stripe
     let stripeCouponId: string | null = null
     try {
+      const valorFinal = parsed.data.tipus === 'import_fix'
+        ? Math.round(parsed.data.valor * 100)
+        : parsed.data.valor
       const couponParams =
         parsed.data.tipus === 'percentatge'
-          ? { percent_off: parsed.data.valor, duration: 'once' as const }
-          : { amount_off: parsed.data.valor, currency: 'eur', duration: 'once' as const }
+          ? { percent_off: valorFinal, duration: 'once' as const }
+          : { amount_off: valorFinal, currency: 'eur', duration: 'once' as const }
 
       const stripeCoupon = await stripe.coupons.create({
         id: parsed.data.codi,
@@ -116,7 +119,7 @@ export async function crearCupoAction(
       codi: parsed.data.codi,
       descripcio: parsed.data.descripcio ?? null,
       tipus: parsed.data.tipus,
-      valor: parsed.data.valor,
+      valor: parsed.data.tipus === 'import_fix' ? Math.round(parsed.data.valor * 100) : parsed.data.valor,
       usos_maxims: typeof parsed.data.usos_maxims === 'number' ? parsed.data.usos_maxims : null,
       data_expiracio: parsed.data.data_expiracio || null,
       stripe_coupon_id: stripeCouponId,

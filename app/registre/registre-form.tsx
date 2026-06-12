@@ -50,7 +50,7 @@ function Field({
   )
 }
 
-const TALLES = ['Miss', 'XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'] as const
+const TALLES = ['5-6', '6-8', '8-10', '10-12', '12-14', 'Miss', 'XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'] as const
 const GENERES = [
   { value: 'home', label: 'Home' },
   { value: 'dona', label: 'Dona' },

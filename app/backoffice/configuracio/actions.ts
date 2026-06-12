@@ -163,7 +163,14 @@ export async function desarPreuDefecteAction(
       .from('configuracio')
       .upsert({ clau: 'preu_defecte_jugador', valor: String(preuCents), actualitzat_el: new Date().toISOString() })
 
+    // Actualitzar el preu de tots els equips que usen el preu per defecte
+    await supabase
+      .from('equips')
+      .update({ preu_inscripcio: preuCents })
+      .eq('preu_per_defecte', true)
+
     revalidatePath('/backoffice/configuracio')
+    revalidatePath('/backoffice/equips')
     return { success: true }
   } catch (err: unknown) {
     if (isRedirectError(err)) throw err

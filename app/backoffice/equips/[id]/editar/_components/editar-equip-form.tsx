@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -12,6 +12,7 @@ type Defaults = {
   slug: string
   categoria: string | null
   preu_inscripcio: number | null
+  preu_per_defecte: boolean
   places_disponibles: number | null
   soci_automatic: boolean
   actiu: boolean
@@ -26,6 +27,7 @@ export function EditarEquipForm({
 }) {
   const boundAction = editarEquipAction.bind(null, equipId)
   const [state, action, pending] = useActionState(boundAction, undefined)
+  const [preuPerDefecte, setPreuPerDefecte] = useState(defaults.preu_per_defecte)
 
   return (
     <form action={action} className="space-y-6 max-w-lg">
@@ -74,21 +76,39 @@ export function EditarEquipForm({
         </div>
 
         {/* Preu */}
-        <div className="space-y-1.5">
-          <Label htmlFor="preu_inscripcio">Preu inscripció</Label>
-          <div className="flex items-center gap-2">
-            <Input
-              id="preu_inscripcio"
-              name="preu_inscripcio"
-              type="number"
-              min={0}
-              step={1}
-              defaultValue={defaults.preu_inscripcio != null ? (defaults.preu_inscripcio / 100).toFixed(0) : ''}
-              placeholder="300"
-              className="w-24"
+        <div className="space-y-2 sm:col-span-2">
+          <div className="flex items-center gap-2.5">
+            <input
+              type="checkbox"
+              id="preu_per_defecte"
+              name="preu_per_defecte"
+              checked={preuPerDefecte}
+              onChange={(e) => setPreuPerDefecte(e.target.checked)}
+              className="size-4 rounded border-input"
             />
-            <span className="text-sm text-muted-foreground">€</span>
+            <div>
+              <Label htmlFor="preu_per_defecte" className="cursor-pointer">Usar preu per defecte</Label>
+              <p className="text-xs text-muted-foreground">
+                S&apos;actualitza automàticament quan canvia el preu per defecte a Configuració.
+              </p>
+            </div>
           </div>
+          {!preuPerDefecte && (
+            <div className="flex items-center gap-2 ml-6">
+              <Label htmlFor="preu_inscripcio" className="sr-only">Preu inscripció</Label>
+              <Input
+                id="preu_inscripcio"
+                name="preu_inscripcio"
+                type="number"
+                min={0}
+                step={1}
+                defaultValue={defaults.preu_inscripcio != null ? (defaults.preu_inscripcio / 100).toFixed(0) : ''}
+                placeholder="300"
+                className="w-24"
+              />
+              <span className="text-sm text-muted-foreground">€</span>
+            </div>
+          )}
         </div>
 
         {/* Places */}

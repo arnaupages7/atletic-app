@@ -39,13 +39,14 @@ export async function crearEquipAction(
     const slugInput = (formData.get('slug') as string | null)?.trim()
     const categoria = (formData.get('categoria') as string | null)?.trim() || null
     const preuRaw = formData.get('preu_inscripcio') as string | null
+    const preuPerDefecte = formData.get('preu_per_defecte') === 'on'
     const sociAutomatic = formData.get('soci_automatic') === 'on'
     const placesRaw = formData.get('places_disponibles') as string | null
 
     if (!nom || !temporada) return { error: 'El nom i la temporada són obligatoris.' }
 
     const slug = slugInput || slugify(nom)
-    const preuInscripcio = preuRaw?.trim() ? Math.round(parseFloat(preuRaw) * 100) : null
+    const preuInscripcio = preuPerDefecte ? null : (preuRaw?.trim() ? Math.round(parseFloat(preuRaw) * 100) : null)
     const placesDisponibles = placesRaw?.trim() ? parseInt(placesRaw, 10) : null
 
     const { error } = await supabase.from('equips').insert({
@@ -54,6 +55,7 @@ export async function crearEquipAction(
       categoria,
       temporada,
       preu_inscripcio: preuInscripcio,
+      preu_per_defecte: preuPerDefecte,
       soci_automatic: sociAutomatic,
       places_disponibles: placesDisponibles,
       actiu: true,
@@ -90,6 +92,7 @@ export async function editarEquipAction(
     const slugInput = (formData.get('slug') as string | null)?.trim()
     const categoria = (formData.get('categoria') as string | null)?.trim() || null
     const preuRaw = formData.get('preu_inscripcio') as string | null
+    const preuPerDefecte = formData.get('preu_per_defecte') === 'on'
     const sociAutomatic = formData.get('soci_automatic') === 'on'
     const placesRaw = formData.get('places_disponibles') as string | null
     const actiu = formData.get('actiu') === 'on'
@@ -97,12 +100,12 @@ export async function editarEquipAction(
     if (!nom) return { error: 'El nom és obligatori.' }
 
     const slug = slugInput || slugify(nom)
-    const preuInscripcio = preuRaw?.trim() ? Math.round(parseFloat(preuRaw) * 100) : null
+    const preuInscripcio = preuPerDefecte ? null : (preuRaw?.trim() ? Math.round(parseFloat(preuRaw) * 100) : null)
     const placesDisponibles = placesRaw?.trim() ? parseInt(placesRaw, 10) : null
 
     const { error } = await supabase
       .from('equips')
-      .update({ nom, slug, categoria, preu_inscripcio: preuInscripcio, soci_automatic: sociAutomatic, places_disponibles: placesDisponibles, actiu })
+      .update({ nom, slug, categoria, preu_inscripcio: preuInscripcio, preu_per_defecte: preuPerDefecte, soci_automatic: sociAutomatic, places_disponibles: placesDisponibles, actiu })
       .eq('id', equipId)
 
     if (error) {

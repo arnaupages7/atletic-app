@@ -24,14 +24,15 @@ type Defaults = {
   cognom2: string
   data_naixement: string
   genere?: 'M' | 'F' | 'A'
-  talla_samarreta: 'Miss' | 'XS' | 'S' | 'M' | 'L' | 'XL' | '2XL' | '3XL'
+  talla_samarreta: TallaSamarreta
   adreca: string
   telefon: string
   num_catsalut: string
   consentiment_comunicacions: boolean
 }
 
-const TALLES = ['Miss', 'XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'] as const
+const TALLES = ['5-6', '6-8', '8-10', '10-12', '12-14', 'Miss', 'XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'] as const
+type TallaSamarreta = typeof TALLES[number]
 
 function FieldError({ errors, field }: { errors?: Record<string, string[]>; field: string }) {
   const msgs = errors?.[field]

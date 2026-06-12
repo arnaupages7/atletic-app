@@ -79,11 +79,12 @@ export function CupoForm({ equips }: { equips: Equip[] }) {
             id="valor"
             name="valor"
             type="number"
-            min={1}
-            placeholder="p.ex. 20 o 500 (cèntims)"
+            min={0.01}
+            step={0.01}
+            placeholder="p.ex. 20 o 5.50"
             aria-invalid={!!state?.errors?.valor}
           />
-          <p className="text-xs text-muted-foreground">% o cèntims (500 = 5€)</p>
+          <p className="text-xs text-muted-foreground">% o euros (5.50 = 5,50€)</p>
           {state?.errors?.valor && (
             <p className="text-xs text-destructive">{state.errors.valor[0]}</p>
           )}

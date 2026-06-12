@@ -32,6 +32,7 @@ export default async function FitxaPage({
       foto_fitxa_url,
       consentiment_privacitat,
       consentiment_comunicacions,
+      compromis_desplacaments,
       created_at,
       equip_id,
       soci_responsable_id,
@@ -158,6 +159,14 @@ export default async function FitxaPage({
               <FitxaRow label="Num. CATSalut" value={jugador.num_catsalut ?? '—'} />
               <FitxaRow label="Telèfon" value={jm.telefon ?? '—'} />
               <FitxaRow label="Talla samarreta" value={jugador.talla_samarreta ?? '—'} />
+              <FitxaRow label="Temporada" value={jugador.temporada ?? '—'} />
+              <FitxaRow label="Equip" value={(jugador.equips as unknown as { nom: string } | null)?.nom ?? '—'} />
+            </div>
+            {/* Consentiments */}
+            <div className="border-t pt-3 grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
+              <FitxaRow label="Privacitat" value={jugador.consentiment_privacitat ? 'Acceptat ✓' : 'No acceptat'} />
+              <FitxaRow label="Comunicacions" value={jugador.consentiment_comunicacions ? 'Acceptat ✓' : 'No'} />
+              <FitxaRow label="Compromís desp." value={jugador.compromis_desplacaments ? 'Sí ✓' : 'No marcat'} />
             </div>
 
             {/* Adreça */}

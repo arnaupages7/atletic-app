@@ -8,7 +8,7 @@ import { buttonVariants } from '@/components/ui/button'
 
 export const metadata: Metadata = { title: 'Comanda de samarretes' }
 
-const TALLES = ['Miss', 'XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'] as const
+const TALLES = ['5-6', '6-8', '8-10', '10-12', '12-14', 'Miss', 'XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'] as const
 
 function buildTallesVisibles(totals: Record<string, number>) {
   return (totals['S/T'] ?? 0) > 0 ? [...TALLES, 'S/T'] : [...TALLES]

@@ -20,7 +20,7 @@ export default async function EditarEquipPage({
 
   const { data: equip } = await supabase
     .from('equips')
-    .select('id, nom, slug, categoria, temporada, preu_inscripcio, soci_automatic, places_disponibles, actiu')
+    .select('id, nom, slug, categoria, temporada, preu_inscripcio, preu_per_defecte, soci_automatic, places_disponibles, actiu')
     .eq('id', id)
     .single()
 
@@ -51,6 +51,7 @@ export default async function EditarEquipPage({
               slug: equip.slug,
               categoria: equip.categoria,
               preu_inscripcio: equip.preu_inscripcio,
+              preu_per_defecte: equip.preu_per_defecte,
               places_disponibles: equip.places_disponibles,
               soci_automatic: equip.soci_automatic,
               actiu: equip.actiu,
